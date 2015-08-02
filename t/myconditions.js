@@ -1,4 +1,5 @@
 var assert = require('assert'),
+  _ = require('lodash'),
   Engine = require('../index');
 
 var policies = [{
@@ -15,73 +16,46 @@ var policies = [{
       "arn:aws:iam:::user/${aws:username}"
     ],
     "Condition": {
-      "Bool": {
-        "aws:MultiFactorAuthPresent": true
+      "EqualsFoo": {
+        "aws:username": true
       }
     }
   }]
 }];
 
 var engine = new Engine(policies, {
-  conditions: _.extend(require('./conditions'), {
-
-  }),
+  conditions: _.extend({
+    EqualsFoo: function EqualsFoo(a, b) {
+      return a ? b === 'foo' : b !== 'foo';
+    }
+  }, require('../conditions')),
 });
 
-//engine.validate(policies);
-//engine.validate(policies[0]);
-//engine.validate(policies[1]);
+describe('custom condition', function() {
 
-describe('policies', function() {
-  it('evaluate', function() {
+  it('username is foo', function() {
     assert.ok(engine.evaluate({
-      action: 'iam:CreateVirtualMFADevice',
-      resource: 'arn:aws:iam:::mfa/moritzonken',
+      action: 'iam:DeactivateMFADevice',
+      resource: 'arn:aws:iam:::mfa/foo',
       variables: {
         aws: {
           CurrentTime: new Date(),
-          MultiFactorAuthPresent: false,
-          username: 'moritzonken',
+          MultiFactorAuthPresent: true,
+          username: 'foo',
         }
       }
     }));
   });
 
-  it('evaluate condition', function() {
-    assert.ok(engine.evaluate({
-      action: 'iam:DeactivateMFADevice',
-      resource: 'arn:aws:iam:::mfa/moritzonken',
-      variables: {
-        aws: {
-          CurrentTime: new Date(),
-          MultiFactorAuthPresent: true,
-          username: 'moritzonken',
-        }
-      }
-    }));
-
+  it('username is bar', function() {
     assert.ok(!engine.evaluate({
       action: 'iam:DeactivateMFADevice',
-      resource: 'arn:aws:iam:::mfa/moritzonken',
-      variables: {
-        aws: {
-          CurrentTime: new Date(),
-          MultiFactorAuthPresent: false,
-          username: 'moritzonken',
-        }
-      }
-    }));
-  });
-
-  it('embedded regex in variable', function() {
-    assert.ok(engine.evaluate({
-      action: 'iam:CreateVirtualMFADevice',
-      resource: 'arn:aws:iam:::mfa/moritzonken',
+      resource: 'arn:aws:iam:::mfa/bar',
       variables: {
         aws: {
           CurrentTime: new Date(),
           MultiFactorAuthPresent: true,
-          username: 'moritz*',
+          username: 'bar',
         }
       }
     }));
