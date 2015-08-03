@@ -1,5 +1,5 @@
 var assert = require('assert'),
-  Engine = require('../index');
+  Engine = require('../pbac');
 
 var policies = [{
   "Version": "2012-10-17",

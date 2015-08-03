@@ -2,7 +2,7 @@
  * @title Access Policy Engine
  * @license MIT
  * @author Moritz Onken
- * @class Engine
+ * @class PBAC
  */
 
 var _ = require('lodash'),
@@ -10,6 +10,15 @@ var _ = require('lodash'),
   conditions = require('./conditions'),
   ZSchema = require('z-schema'),
   util = require('util');
+
+/**
+ * ```
+ * var PBAC = require('pbac');
+ * var pbac = new PBAC({
+ *
+ * });
+ * ```
+ */
 
 var Klass = function(policies, options) {
   options = _.isPlainObject(options) ? options : {};
@@ -22,7 +31,6 @@ var Klass = function(policies, options) {
     schema: _.isPlainObject(options.schema) ? options.schema : policySchema,
     logger: console,
     conditions: myconditions,
-    validator: new ZSchema(),
   });
   this.addConditionsToSchema();
   if(this.validateSchema) this._validateSchema();
@@ -42,14 +50,20 @@ _.extend(Klass.prototype, {
     _.forEach(this.conditions, function(condition, name) {
       props[name] = { type: 'object' };
     }, this);
-    console.log(this.schema);
   },
   _validateSchema: function() {
     var validator = new ZSchema();
     if (!validator.validateSchema(this.schema))
       this.throw('schema validation failed with', validator.getLastError());
   },
-  validate: function(policies) {
+  /**
+   * Validates one or many policies against the schema provided in the constructor.
+   * Will throw an error if validation fails.
+   *
+   * @param {Object} policy   Array of policies or single policy object
+   * @return {Bool} Returns `true` if the policies are valid
+   */
+  validate: function validate(policies) {
     policies = _.isArray(policies) ? policies : [policies];
     var validator = new ZSchema({
       noExtraKeywords: true,
@@ -61,6 +75,17 @@ _.extend(Klass.prototype, {
       return result;
     }.bind(this));
   },
+  /**
+   * Tests an object against the policies and determines if the object passes.
+   * The method will first try to find a policy with an explicit `Deny` for the combination of
+   * `resource`, `action` and `condition` (matching policy). If such policy exists, `evaulate` returns false.
+   * If there is no explicit deny the method will look for a matching policy with an explicit `Allow`.
+   * `evaulate` will return `true` if such a policy is found. If no matching can be found at all,
+   * `evaluate` will return `false`.
+   *
+   * @param {Object} object   Object to test against the policies
+   * @return {Bool} Returns `true` if the object passes, `false` otherwise
+   */
   evaluate: function evaluate(options) {
     options = _.extend({
       action: '',

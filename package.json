@@ -1,5 +1,5 @@
 {
-  "name": "geraldine",
+  "name": "pbac",
   "version": "0.0.1",
   "dependencies": {
     "ipcheck": "^0.1.0",
@@ -8,7 +8,7 @@
   },
   "scripts": {
     "test": "mocha --bail t/",
-    "docs": "jsdox -i index . && cat output/{0,conditions}.md LICENSE > README.md && doctoc --title Contents README.md"
+    "docs": "jsdox -i index . && cat output/{intro,pbac}.md LICENSE > README.md && doctoc --title Contents README.md"
   },
   "devDependencies": {
     "doctoc": "^0.14.2",
@@ -17,8 +17,9 @@
   },
   "repository": {
     "type": "git",
-    "url": "monken/js-geraldine"
+    "url": "monken/node-pbac"
   },
+  "index": "bpac",
   "author": "Moritz Onken <onken@netcubed.de>",
   "license": "MIT"
 }

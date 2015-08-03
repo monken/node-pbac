@@ -1,6 +1,6 @@
 var assert = require('assert'),
   _ = require('lodash'),
-  Engine = require('../index');
+  Engine = require('../pbac');
 
 var policies = [{
   "Version": "2012-10-17",
