@@ -3,11 +3,12 @@
   "version": "0.0.1",
   "dependencies": {
     "ipcheck": "^0.1.0",
-    "lodash": "^3.10.0"
+    "lodash": "^3.10.0",
+    "z-schema": "^3.12.0"
   },
   "scripts": {
     "test": "mocha --bail t/",
-    "docs": "jsdox -i index . && cat output/{0,collection,view}.md LICENSE > README.md && doctoc --title Contents README.md"
+    "docs": "jsdox -i index . && cat output/{0,conditions}.md LICENSE > README.md && doctoc --title Contents README.md"
   },
   "devDependencies": {
     "doctoc": "^0.14.2",

@@ -1,1 +1,48 @@
-{}
+{
+  "type": "object",
+  "properties": {
+    "Version": {
+      "type": "string"
+    },
+    "Statement": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/Statement"
+      }
+    }
+  },
+  "required": ["Version", "Statement"],
+  "definitions": {
+    "Condition": {
+      "type": "object"
+    },
+    "Statement": {
+      "type": "object",
+      "required": ["Effect"],
+      "properties": {
+        "Effect": {
+          "type": "string",
+          "enum": ["Allow", "Deny"]
+        },
+        "Sid": {
+          "type": "string"
+        },
+        "Action": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "Resource": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "Condition": {
+          "$ref": "#/definitions/Condition"
+        }
+      }
+    }
+  }
+}

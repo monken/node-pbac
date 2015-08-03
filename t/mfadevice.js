@@ -42,7 +42,7 @@ var policies = [{
       "iam:ListVirtualMFADevices",
       "iam:ListUsers"
     ],
-    "Resource": "*"
+    "Resource": ["*"]
   }]
 }];
 

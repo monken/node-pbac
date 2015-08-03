@@ -24,11 +24,11 @@ var policies = [{
 }];
 
 var engine = new Engine(policies, {
-  conditions: _.extend({
+  conditions: {
     EqualsFoo: function EqualsFoo(a, b) {
       return a ? b === 'foo' : b !== 'foo';
     }
-  }, require('../conditions')),
+  },
 });
 
 describe('custom condition', function() {

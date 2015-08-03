@@ -7,25 +7,59 @@
 
 var _ = require('lodash'),
   policySchema = require('./schema.json'),
-  conditions = require('./conditions');
+  conditions = require('./conditions'),
+  ZSchema = require('z-schema'),
+  util = require('util');
 
 var Klass = function(policies, options) {
   options = _.isPlainObject(options) ? options : {};
+  var myconditions = _.isPlainObject(options.conditions) ? _.extend(options.conditions, conditions) : conditions;
   _.extend(this, {
     policies: [],
     variables: _.isPlainObject(options.variables) ? options.variables : {},
-    validate: _.isBoolean(options.validate) ? options.validate : true,
+    validateSchema: _.isBoolean(options.validateSchema) ? options.validateSchema : true,
+    validatePolicies: _.isBoolean(options.validatePolicies) ? options.validatePolicies : true,
     schema: _.isPlainObject(options.schema) ? options.schema : policySchema,
     logger: console,
-    conditions: _.isPlainObject(options.conditions) ? options.conditions : conditions,
+    conditions: myconditions,
+    validator: new ZSchema(),
   });
+  this.addConditionsToSchema();
+  if(this.validateSchema) this._validateSchema();
   this.add(policies);
 };
 
 _.extend(Klass.prototype, {
   add: function add(policies) {
     policies = _.isArray(policies) ? policies : [policies];
+    if(this.validatePolicies) this.validate(policies);
     this.policies.push.apply(this.policies, policies);
+  },
+  addConditionsToSchema: function addConditionsToSchema() {
+    var definition = _.get(this.schema, 'definitions.Condition');
+    if(!definition) return;
+    var props = definition.properties = {};
+    _.forEach(this.conditions, function(condition, name) {
+      props[name] = { type: 'object' };
+    }, this);
+    console.log(this.schema);
+  },
+  _validateSchema: function() {
+    var validator = new ZSchema();
+    if (!validator.validateSchema(this.schema))
+      this.throw('schema validation failed with', validator.getLastError());
+  },
+  validate: function(policies) {
+    policies = _.isArray(policies) ? policies : [policies];
+    var validator = new ZSchema({
+      noExtraKeywords: true,
+    });
+    return _.all(policies, function(policy) {
+      var result = validator.validate(policy, this.schema);
+      if (!result)
+        this.throw('policy validation failed with', validator.getLastError());
+      return result;
+    }.bind(this));
   },
   evaluate: function evaluate(options) {
     options = _.extend({
@@ -94,6 +128,16 @@ _.extend(Klass.prototype, {
         return conditions[key].call(this, value, this.getVariableValue(variable, variables));
       }.bind(this));
     }.bind(this));
+  },
+  throw: function(name, message) {
+    var args = [].slice.call(arguments, 2);
+    args.unshift(message);
+    var e = new Error();
+    _.extend(e, {
+      name: name,
+      message: util.format.apply(util, args)
+    });
+    throw e;
   },
 });
 
