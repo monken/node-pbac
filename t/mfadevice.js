@@ -48,10 +48,6 @@ var policies = [{
 
 var engine = new Engine(policies);
 
-//engine.validate(policies);
-//engine.validate(policies[0]);
-//engine.validate(policies[1]);
-
 describe('policies', function() {
   it('evaluate', function() {
     assert.ok(engine.evaluate({

@@ -14,8 +14,12 @@ var _ = require('lodash'),
 /**
  * ```
  * var PBAC = require('pbac');
- * var pbac = new PBAC({
- *
+ * var pbac = new PBAC(policies, {
+ *   variables: {
+ *     req: {
+ *       IpAddress: '192.168.0.101',
+ *     }
+ *   }
  * });
  * ```
  */
