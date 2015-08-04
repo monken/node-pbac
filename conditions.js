@@ -1,5 +1,6 @@
 var _ = require('lodash'),
-  ipcheck = require('ipcheck');
+  ipcheck = require('ipcheck'),
+  bufferEquals = require('./lib/bufferequals');
 
 var conditions = {
   NumericEquals: function NumericEquals(a, b) {
@@ -58,11 +59,11 @@ var conditions = {
   },
   BinaryEquals: function BinaryEquals(a, b) {
     if(!_.isString(b) || !(a instanceof Buffer)) return false;
-    return a.equals(new Buffer(b, 'base64'));
+    return bufferEquals(a, new Buffer(b, 'base64'));
   },
   BinaryNotEquals: function BinaryEquals(a, b) {
     if(!_.isString(b) || !(a instanceof Buffer)) return false;
-    return !a.equals(new Buffer(b, 'base64'));
+    return !bufferEquals(a, new Buffer(b, 'base64'));
   },
   /*
   ArnEquals
