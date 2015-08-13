@@ -1,6 +1,12 @@
-[![Build Status](https://travis-ci.org/monken/node-pbac.svg?branch=master)](https://travis-ci.org/monken/node-pbac)
+[![npm](http://img.shields.io/npm/v/jsdox.svg)](https://npmjs.org/package/pbac) [![npm](http://img.shields.io/npm/dm/pbac.svg)](https://npmjs.org/package/jsdox) [![Build Status](https://travis-ci.org/monken/node-pbac.svg?branch=master)](https://travis-ci.org/monken/node-pbac)
 
-# node-pbac
+# Policy Based Access Control
+
+**AWS IAM Policy compatible evaluation engine**
+
+Use the power and flexibility of the AWS IAM Policy syntax in your own application to manage access control. For more details on AWS IAM Policies have a look at https://docs.aws.amazon.com/IAM/latest/UserGuide/policies_overview.html.
+
+**Note:** The policy elements `Principal`, `NotPrincipal`, `NotResource` and  conditions `ArnEquals`, `ArnNotEquals`, `ArnLike`, `ArnNotLike` are not supported at the moment.
 
 ## Installation
 
@@ -8,77 +14,131 @@
 npm install pbac
 ```
 
-
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 Contents
 
-- [Global](#global)
-  - [Class: PBAC](#class-pbac)
-    - [PBAC.Klass()](#pbacklass)
-    - [PBAC.validate(policy)](#pbacvalidatepolicy)
-    - [PBAC.evaluate(object)](#pbacevaluateobject)
+- [Synopsis](#synopsis)
+- [Constructor](#constructor)
+  - [Properties](#properties)
+- [Methods](#methods)
+  - [evaluate(params)](#evaluateparams)
+  - [validate(policy)](#validatepolicy)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-# Global
 
+## Synopsis
 
-
-
-
-* * *
-
-## Class: PBAC
-
-
-### PBAC.Klass() 
-
-```
+```javascript
 var PBAC = require('pbac');
-var pbac = new PBAC({
 
+var policies = [{
+  "Version": "2012-10-17",
+  "Statement": [{
+    "Sid": "OptionalDescription",
+    "Effect": "Allow",
+    "Action": [
+      "iam:CreateUser",
+      "iam:UpdateUser",
+      "iam:DeleteUser"
+    ],
+    "Resource": [
+      "arn:aws:iam:::user/${req:UserName}"
+    ],
+    "Condition": {
+      "IpAddress": {
+        "req:IpAddress": "10.0.20.0/24"
+      }
+    }
+  }]
+}];
+
+var pbac = new PBAC(policies);
+
+// returns true
+pbac.evaluate({
+  action: 'iam:CreateUser',
+  resource: 'arn:aws:iam:::user/testuser',
+  variables: {
+    req: {
+      IpAddress: '10.0.20.51',
+      UserName: 'testuser',
+    }
+  }
 });
 ```
 
+## Constructor
 
-### PBAC.validate(policy) 
+```javascript
+var pbac = new PBAC(policies, [options]);
+```
 
-Validates one or many policies against the schema provided in the constructor.
-Will throw an error if validation fails.
+Constructs a policy evaluator.
 
-**Parameters**
+### Properties
 
-**policy**: `Object`, Array of policies or single policy object
 
-**Returns**: `Bool`, Returns `true` if the policies are valid
+* **`policies`** (Array|Object)
+  Either an array of policies or a single policy document. Have a look at https://docs.aws.amazon.com/IAM/latest/UserGuide/AccessPolicyLanguage_ElementDescriptions.html for a description of the policy syntax.
+* **`options`** (Object)
+    * `schema` (Object)
+      JSON schema that describes the policies. Defaults to the contents of schema.json that ships with this module.
+    * `validateSchema` (Boolean)
+      Validate the schema when the object is constructed. This can be disabled in a production environment if it can be assumed that the schema is valid to improve performance when constructing new objects.
+    * `validatePolicies` (Boolean)
+      Policies passed to the constructor will be validated against the `schema`. Defaults to `true`. Can be disabled to improve performance if the policies can be assumed to be valid.
+    * `conditions` (Object)
+      Object of conditions that are supported in the `Conditions` attribute of policies. Defaults to `conditions.js` in this module. If conditions are passed to the constructor they will be merged with the conditions of the `conditions.js` module (with `conditions.js` taking precedence).
 
-### PBAC.evaluate(object) 
+
+## Methods
+
+
+### evaluate(params)
 
 Tests an object against the policies and determines if the object passes.
 The method will first try to find a policy with an explicit `Deny` for the combination of
 `resource`, `action` and `condition` (matching policy). If such policy exists, `evaulate` returns false.
 If there is no explicit deny the method will look for a matching policy with an explicit `Allow`.
 `evaulate` will return `true` if such a policy is found. If no matching can be found at all,
-`evaluate` will return `false`.
+`evaluate` will return `false`. Please find a more thorough explanation of this process at https://docs.aws.amazon.com/IAM/latest/UserGuide/AccessPolicyLanguage_EvaluationLogic.html.
+
+```javascript
+pbac.evaluate({
+  action: 'iam:CreateUser',
+  resource: 'arn:aws:iam:::user/testuser',
+  variables: {
+    req: {
+      IpAddress: '10.0.20.51',
+      UserName: 'testuser',
+    }
+  }
+});
+```
 
 **Parameters**
 
-**object**: `Object`, Object to test against the policies
+* **`params`** (Object)
+    * `action` (String) - Action to validate
+    * `resource` (String) - Resource to validate
+    * `variables` (Object) - Nested object of variables for interpolation of policy variables. See [Variables]().
 
-**Returns**: `Bool`, Returns `true` if the object passes, `false` otherwise
+**Returns**: `boolean`, Returns `true` if `params` passes the policies, `false` otherwise
 
+### validate(policy)
 
+Validates one or many policies against the schema provided in the constructor.
+Will throw an error if validation fails.
+
+**Parameters**
+
+* **`policy`** (Array|Object)
+  Array of policies or a single policy object
+
+**Returns**: `boolean`, Returns `true` if the policies are valid
 
 * * *
-
-
-
-
-
-
-
-
-
 
 The MIT License (MIT)
 

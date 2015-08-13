@@ -1,6 +1,6 @@
 {
   "name": "pbac",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "dependencies": {
     "ipcheck": "^0.1.0",
     "lodash": "^3.10.0",
@@ -8,7 +8,7 @@
   },
   "scripts": {
     "test": "mocha --bail t/",
-    "docs": "jsdox -i index . && cat output/{intro,pbac}.md LICENSE > README.md && doctoc --title Contents README.md"
+    "docs": "cat output/intro.md LICENSE > README.md && doctoc --title Contents README.md"
   },
   "devDependencies": {
     "doctoc": "^0.14.2",

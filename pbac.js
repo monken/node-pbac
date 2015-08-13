@@ -1,39 +1,20 @@
-/**
- * @title Access Policy Engine
- * @license MIT
- * @author Moritz Onken
- * @class PBAC
- */
-
+'use strict';
 var _ = require('lodash'),
   policySchema = require('./schema.json'),
   conditions = require('./conditions'),
   ZSchema = require('z-schema'),
   util = require('util');
 
-/**
- * ```
- * var PBAC = require('pbac');
- * var pbac = new PBAC(policies, {
- *   variables: {
- *     req: {
- *       IpAddress: '192.168.0.101',
- *     }
- *   }
- * });
- * ```
- */
 
-var Klass = function(policies, options) {
+
+var PBAC = function constructor(policies, options) {
   options = _.isPlainObject(options) ? options : {};
   var myconditions = _.isPlainObject(options.conditions) ? _.extend(options.conditions, conditions) : conditions;
   _.extend(this, {
     policies: [],
-    variables: _.isPlainObject(options.variables) ? options.variables : {},
     validateSchema: _.isBoolean(options.validateSchema) ? options.validateSchema : true,
     validatePolicies: _.isBoolean(options.validatePolicies) ? options.validatePolicies : true,
     schema: _.isPlainObject(options.schema) ? options.schema : policySchema,
-    logger: console,
     conditions: myconditions,
   });
   this.addConditionsToSchema();
@@ -41,7 +22,7 @@ var Klass = function(policies, options) {
   this.add(policies);
 };
 
-_.extend(Klass.prototype, {
+_.extend(PBAC.prototype, {
   add: function add(policies) {
     policies = _.isArray(policies) ? policies : [policies];
     if(this.validatePolicies) this.validate(policies);
@@ -64,8 +45,8 @@ _.extend(Klass.prototype, {
    * Validates one or many policies against the schema provided in the constructor.
    * Will throw an error if validation fails.
    *
-   * @param {Object} policy   Array of policies or single policy object
-   * @return {Bool} Returns `true` if the policies are valid
+   * @param {object} policy - Array of policies or single policy object
+   * @return {boolean} Returns `true` if the policies are valid
    */
   validate: function validate(policies) {
     policies = _.isArray(policies) ? policies : [policies];
@@ -87,8 +68,8 @@ _.extend(Klass.prototype, {
    * `evaulate` will return `true` if such a policy is found. If no matching can be found at all,
    * `evaluate` will return `false`.
    *
-   * @param {Object} object   Object to test against the policies
-   * @return {Bool} Returns `true` if the object passes, `false` otherwise
+   * @param {object} object - Object to test against the policies
+   * @return {boolean} Returns `true` if the object passes, `false` otherwise
    */
   evaluate: function evaluate(options) {
     options = _.extend({
@@ -170,4 +151,4 @@ _.extend(Klass.prototype, {
   },
 });
 
-module.exports = Klass;
+module.exports = PBAC;
