@@ -2,7 +2,7 @@
 
 # Policy Based Access Control
 
-**AWS IAM Policy compatible evaluation engine**
+**AWS IAM Policy inspired and (mostly) compatible evaluation engine**
 
 Use the power and flexibility of the AWS IAM Policy syntax in your own application to manage access control. For more details on AWS IAM Policies have a look at https://docs.aws.amazon.com/IAM/latest/UserGuide/policies_overview.html.
 
@@ -72,14 +72,10 @@ Constructs a policy evaluator.
 * **`policies`** (Array|Object)
   Either an array of policies or a single policy document. Have a look at https://docs.aws.amazon.com/IAM/latest/UserGuide/AccessPolicyLanguage_ElementDescriptions.html for a description of the policy syntax.
 * **`options`** (Object)
-    * `schema` (Object)
-      JSON schema that describes the policies. Defaults to the contents of `schema.json` that ships with this module.
-    * `validateSchema` (Boolean)
-      Validate the schema when the object is constructed. This can be disabled in a production environment if it can be assumed that the schema is valid to improve performance when constructing new objects.
-    * `validatePolicies` (Boolean)
-      Policies passed to the constructor will be validated against the `schema`. Defaults to `true`. Can be disabled to improve performance if the policies can be assumed to be valid.
-    * `conditions` (Object)
-      Object of conditions that are supported in the `Conditions` attribute of policies. Defaults to `conditions.js` in this module. If conditions are passed to the constructor they will be merged with the conditions of the `conditions.js` module (with `conditions.js` taking precedence).
+    * `schema` (Object) - JSON schema that describes the policies. Defaults to the contents of schema.json that ships with this module.
+    * `validateSchema` (Boolean) - Validate the schema when the object is constructed. This can be disabled in production environment if it can be assumed that the schema is valid to improve performance when constructing new objects.
+    * `validatePolicies` (Boolean) - Policies passed to the constructor will be validated against the `schema`. Defaults to `true`. Can be disabled to improve performance if the policies can be assumed to be valid.
+    * `conditions` (Object) - Object of conditions that are supported in the `Conditions` attribute of policies. Defaults to `conditions.js` in this module. If conditions are passed to the constructor they will be merged with the conditions of the `conditions.js` module (with `conditions.js` taking precedence).
 
 
 ## Methods
@@ -112,7 +108,7 @@ pbac.evaluate({
 * **`params`** (Object)
     * `action` (String) - Action to validate
     * `resource` (String) - Resource to validate
-    * `variables` (Object) - Nested object of variables for interpolation of policy variables. See [Variables]().
+    * `variables` (Object) - Nested object of variables for interpolation of policy variables. See [Variables](#variables).
 
 **Returns**: `boolean`, Returns `true` if `params` passes the policies, `false` otherwise
 
@@ -127,6 +123,30 @@ Will throw an error if validation fails.
   Array of policies or a single policy object
 
 **Returns**: `boolean`, Returns `true` if the policies are valid
+
+
+## Reference
+
+### Variables
+
+Have a look at https://docs.aws.amazon.com/IAM/latest/UserGuide/PolicyVariables.html to understand what policy variables are, where they can be used and how they are interpreted. The `evaluate` method expects a `variables` parameter which is a nested object that translates to colon-separated variables.
+
+**Example:**
+
+```javascript
+var variables = {
+    req: {
+      IpAddress: '10.0.20.51',
+      UserName: 'testuser',
+    },
+    session: {
+      LoggedInDate: '20150929T15:12:42Z',
+  },
+};
+```
+
+This would translate to the variables `req:IpAddress`, `req:UserName` and `session:LoggedInDate`.
+
 
 * * *
 
