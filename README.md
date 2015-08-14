@@ -1,4 +1,4 @@
-[![npm](http://img.shields.io/npm/v/jsdox.svg)](https://npmjs.org/package/pbac) [![npm](http://img.shields.io/npm/dm/pbac.svg)](https://npmjs.org/package/jsdox) [![Build Status](https://travis-ci.org/monken/node-pbac.svg?branch=master)](https://travis-ci.org/monken/node-pbac)
+[![npm](http://img.shields.io/npm/v/pbac.svg?style=flat-square)](https://npmjs.org/package/pbac) [![npm](http://img.shields.io/npm/dm/pbac.svg?style=flat-square)](https://npmjs.org/package/pbac) [![Build Status](https://img.shields.io/travis/monken/node-pbac/master.svg?style=flat-square)](https://travis-ci.org/monken/node-pbac) ![license](https://img.shields.io/badge/license-mit-blue.svg?style=flat-square)
 
 # Policy Based Access Control
 
