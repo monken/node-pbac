@@ -18,7 +18,18 @@
     },
     "Statement": {
       "type": "object",
-      "required": ["Effect"],
+      "allOf": [{
+        "required": ["Effect"]
+      }, {
+        "not": {
+          "anyOf": [{
+            "required": ["Action", "NotAction"]
+          }, {
+            "required": ["Resource", "NotResource"]
+          }]
+        }
+      }],
+
       "properties": {
         "Effect": {
           "type": "string",
