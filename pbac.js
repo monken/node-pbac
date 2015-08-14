@@ -5,8 +5,6 @@ var _ = require('lodash'),
   ZSchema = require('z-schema'),
   util = require('util');
 
-
-
 var PBAC = function constructor(policies, options) {
   options = _.isPlainObject(options) ? options : {};
   var myconditions = _.isPlainObject(options.conditions) ? _.extend(options.conditions, conditions) : conditions;
@@ -18,22 +16,24 @@ var PBAC = function constructor(policies, options) {
     conditions: myconditions,
   });
   this.addConditionsToSchema();
-  if(this.validateSchema) this._validateSchema();
+  if (this.validateSchema) this._validateSchema();
   this.add(policies);
 };
 
 _.extend(PBAC.prototype, {
   add: function add(policies) {
     policies = _.isArray(policies) ? policies : [policies];
-    if(this.validatePolicies) this.validate(policies);
+    if (this.validatePolicies) this.validate(policies);
     this.policies.push.apply(this.policies, policies);
   },
   addConditionsToSchema: function addConditionsToSchema() {
     var definition = _.get(this.schema, 'definitions.Condition');
-    if(!definition) return;
+    if (!definition) return;
     var props = definition.properties = {};
     _.forEach(this.conditions, function(condition, name) {
-      props[name] = { type: 'object' };
+      props[name] = {
+        type: 'object'
+      };
     }, this);
   },
   _validateSchema: function() {
@@ -41,13 +41,6 @@ _.extend(PBAC.prototype, {
     if (!validator.validateSchema(this.schema))
       this.throw('schema validation failed with', validator.getLastError());
   },
-  /**
-   * Validates one or many policies against the schema provided in the constructor.
-   * Will throw an error if validation fails.
-   *
-   * @param {object} policy - Array of policies or single policy object
-   * @return {boolean} Returns `true` if the policies are valid
-   */
   validate: function validate(policies) {
     policies = _.isArray(policies) ? policies : [policies];
     var validator = new ZSchema({
@@ -60,17 +53,6 @@ _.extend(PBAC.prototype, {
       return result;
     }.bind(this));
   },
-  /**
-   * Tests an object against the policies and determines if the object passes.
-   * The method will first try to find a policy with an explicit `Deny` for the combination of
-   * `resource`, `action` and `condition` (matching policy). If such policy exists, `evaulate` returns false.
-   * If there is no explicit deny the method will look for a matching policy with an explicit `Allow`.
-   * `evaulate` will return `true` if such a policy is found. If no matching can be found at all,
-   * `evaluate` will return `false`.
-   *
-   * @param {object} object - Object to test against the policies
-   * @return {boolean} Returns `true` if the object passes, `false` otherwise
-   */
   evaluate: function evaluate(options) {
     options = _.extend({
       action: '',
@@ -96,15 +78,14 @@ _.extend(PBAC.prototype, {
     return _(this.policies).pluck('Statement').flatten().find(function(statement, idx) {
       if (statement.Effect !== options.effect) return false;
       var actionApplies = false;
-      if (!this.evaluateResource(statement.Resource, options.resource, options.variables))
+      if (statement.Resource && !this.evaluateResource(statement.Resource, options.resource, options.variables))
         return false;
-      if (statement.Action) actionApplies = _.find(statement.Action, function(action) {
-        return this.conditions.StringLike(action, options.action);
-      }.bind(this)) ? true : false;
-      if (statement.NotAction) actionApplies = _.all(statement.NotAction, function(action) {
-        return this.conditions.StringNotLike(action, options.action);
-      }.bind(this));
-      if (!actionApplies) return false;
+      if (statement.NotResource && this.evaluateResource(statement.NotResource, options.resource, options.variables))
+        return false;
+      if (statement.Action && !this.evaluateAction(statement.Action, options.action))
+        return false;
+      if (statement.NotAction && this.evaluateAction(statement.NotAction, options.action))
+        return false;
       return this.evaluateCondition(statement.Condition, options.variables);
     }.bind(this));
   },
@@ -113,11 +94,16 @@ _.extend(PBAC.prototype, {
       return this.getVariableValue(variable, variables);
     }.bind(this));
   },
-  getVariableValue: function(variable, variables) {
+  getVariableValue: function getVariableValue(variable, variables) {
     var parts = variable.split(':');
     if (_.isPlainObject(variables[parts[0]]) && !_.isUndefined(variables[parts[0]][parts[1]]))
       return variables[parts[0]][parts[1]];
     else return variable;
+  },
+  evaluateAction: function evaluateAction(actions, reference) {
+    return _.find(actions, function(action) {
+      return this.conditions.StringLike.call(this, action, reference);
+    }.bind(this));
   },
   evaluateResource: function evaluateResource(resources, reference, variables) {
     resources = _.isArray(resources) ? resources : [resources];
@@ -139,7 +125,7 @@ _.extend(PBAC.prototype, {
       }.bind(this));
     }.bind(this));
   },
-  throw: function(name, message) {
+  throw: function (name, message) {
     var args = [].slice.call(arguments, 2);
     args.unshift(message);
     var e = new Error();
