@@ -19,7 +19,7 @@
     "type": "git",
     "url": "monken/node-pbac"
   },
-  "index": "bpac",
+  "main": "pbac.js",
   "author": "Moritz Onken <onken@netcubed.de>",
   "license": "MIT"
 }
