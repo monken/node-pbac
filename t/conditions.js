@@ -6,20 +6,25 @@ var conditions = require('../conditions');
 var tests = {
   StringLike: [
     ['foo', 'foo', true],
-    ['foo', 'fooo', false],
+    ['fooo', 'foo', false],
     ['foo', 'baz', false],
-    ['fo?o', 'foo', false],
-    ['fo*', 'foo', true],
-    ['fo*bar', 'fooxyqkhwebar', true],
+    ['foo', 'fo?o', false],
+    ['foo', 'fo?', true],
+    ['foo', 'fo*', true],
+    ['fooxyqkhwebar', 'fo*bar', true],
+    ['', '*', true],
+    [undefined, '*', true],
   ],
   StringLikeIfExists: [
     ['foo', 'foo', true],
-    ['foo', 'fooo', false],
+    ['fooo', 'foo', false],
     [undefined, 'foo', true],
   ],
   StringNotLike: [
     ['foo', 'foo', false],
     ['foo', 'baz', true],
+    ['foo', 'fo*', false],
+    [undefined, '*', false],
   ],
   Bool: [
     [true, false, false],
@@ -33,12 +38,12 @@ var tests = {
   ],
   IpAddress: [
     ['127.0.0.1', '127.0.0.1', true],
-    ['127.0.0.1/32', '127.0.0.1', true],
-    ['127.0.0.0/24', '127.0.0.122', true],
+    ['127.0.0.1', '127.0.0.1/32', true],
+    ['127.0.0.0', '127.0.0.122/24', true],
     ['127.0.0.2', '127.0.0.1', false],
-    ['127.0.0.1/32', '127.0.0.2', false],
-    ['127.0.0.0/24', '127.0.1.122', false],
-    [null, '127.0.1.122', false],
+    ['127.0.0.2', '127.0.0.1/32', false],
+    ['127.0.1.122', '127.0.0.0/24', false],
+    ['127.0.1.122', null, false],
     ['test', 'test', false],
   ],
   Null: [

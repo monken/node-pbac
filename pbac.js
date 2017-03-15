@@ -102,14 +102,14 @@ _.extend(PBAC.prototype, {
   },
   evaluateAction: function evaluateAction(actions, reference) {
     return _.find(actions, function(action) {
-      return this.conditions.StringLike.call(this, action, reference);
+      return this.conditions.StringLike.call(this, reference, action);
     }.bind(this));
   },
   evaluateResource: function evaluateResource(resources, reference, variables) {
     resources = _.isArray(resources) ? resources : [resources];
     return _.find(resources, function(resource) {
       var value = this.interpolateValue(resource, variables);
-      return this.conditions.StringLike.call(this, value, reference);
+      return this.conditions.StringLike.call(this, reference, value);
     }.bind(this));
   },
   evaluateCondition: function evaluateCondition(condition, variables) {
@@ -121,7 +121,7 @@ _.extend(PBAC.prototype, {
         values = _.values(expression)[0];
       values = _.isArray(values) ? values : [values];
       return _.find(values, function(value) {
-        return conditions[key].call(this, value, this.getVariableValue(variable, variables));
+        return conditions[key].call(this, this.getVariableValue(variable, variables), value);
       }.bind(this));
     }.bind(this));
   },

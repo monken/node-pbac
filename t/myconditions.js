@@ -26,7 +26,7 @@ var policies = [{
 var engine = new Engine(policies, {
   conditions: {
     EqualsFoo: function EqualsFoo(a, b) {
-      return a ? b === 'foo' : b !== 'foo';
+      return b && a === 'foo';
     }
   },
 });

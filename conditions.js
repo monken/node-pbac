@@ -11,7 +11,7 @@ var conditions = {
     if (!_.isNumber(a) || !_.isNumber(b)) return false;
     return !this.conditions.NumericEquals.apply(this, arguments);
   },
-  NumericLessThan: function NumericEquals(a, b) {
+  NumericLessThan: function NumericLessThan(a, b) {
     if (!_.isNumber(a) || !_.isNumber(b)) return false;
     return a < b;
   },
@@ -76,7 +76,7 @@ var conditions = {
     return b ? _.isUndefined(a) : !_.isUndefined(a);
   },
   IpAddress: function IpAddress(a, b) {
-    return ipcheck.match(b, a);
+    return ipcheck.match(a, b);
   },
   NotIpAddress: function NotIpAddress() {
     return !this.conditions.IpAddress.apply(this, arguments);
@@ -98,15 +98,15 @@ var conditions = {
     return a.toLowerCase() !== b.toLowerCase();
   },
   StringLike: function StringLike(a, b) {
-    if (!_.isString(a) || !_.isString(b)) return false;
+    if (!_.isString(b)) return false;
     return new RegExp('^' +
-        a.replace(/[\-\[\]\/\{\}\(\)\+\.\\\^\$\|]/g, "\\$&")
+        b.replace(/[\-\[\]\/\{\}\(\)\+\.\\\^\$\|]/g, "\\$&")
         .replace(/\*/g, '.*')
         .replace(/\?/g, '.') + '$')
-      .test(b);
+      .test(a);
   },
   StringNotLike: function StringNotLike(a, b) {
-    if (!_.isString(a) || !_.isString(b)) return false;
+    if (!_.isString(b)) return false;
     return !this.conditions.StringLike.apply(this, arguments);
   },
   Bool: function Bool(a, b) {
