@@ -25,7 +25,7 @@
     ],
     "Condition": {
       "DateGreaterThan": {
-        "aws:CurrentTime": "20160101T01:01:01Z"
+        "aws:CurrentTime": "2016-01-01T01:01:01Z"
       },
       "Bool": {
         "aws:MultiFactorAuthPresent": true

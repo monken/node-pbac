@@ -5,7 +5,7 @@ var policies = require('./policies/mfadevice.json');
 
 var engine = new Engine(policies);
 
-describe('policies', function() {
+describe(__filename, function() {
   it('evaluate', function() {
     assert.ok(engine.evaluate({
       action: 'iam:CreateVirtualMFADevice',
@@ -29,7 +29,7 @@ describe('policies', function() {
     }));
   });
 
-  it('evaluate condition', function() {
+  it('should pass', function() {
     assert.ok(engine.evaluate({
       action: 'iam:DeactivateMFADevice',
       resource: 'arn:aws:iam:::mfa/moritzonken',
@@ -42,7 +42,9 @@ describe('policies', function() {
         }
       }
     }));
+  });
 
+  it('should fail', function() {
     assert.ok(!engine.evaluate({
       action: 'iam:DeactivateMFADevice',
       resource: 'arn:aws:iam:::mfa/moritzonken',
