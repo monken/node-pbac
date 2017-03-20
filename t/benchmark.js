@@ -8,7 +8,9 @@ var start = new Date().getTime();
 
 var today = new Date();
 
-for (var i = 0; i < 100000; i++) {
+var count = 10000;
+
+for (var i = 0; i < count; i++) {
   engine.evaluate({
     action: 'iam:DeactivateMFADevice',
     resource: 'arn:aws:iam:::mfa/moritzonken',
@@ -25,4 +27,4 @@ for (var i = 0; i < 100000; i++) {
 
 var stop = new Date().getTime();
 
-console.log(`took ${stop-start} ms, or ${(stop-start)/1000000} per ms second`)
+console.log(`took ${stop-start} ms, or ${(stop-start)/count} per evaluation`)

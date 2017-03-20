@@ -120,6 +120,23 @@ _.forEach(conditions, function(fn, condition) {
     if (_.isUndefined(a)) return true;
     else return fn.apply(this, arguments);
   };
+  conditions['ForAllValues:' + condition] = function(a, b) {
+    if (!_.isArray(a)) a = [a];
+    else return _.every(a, function(value) {
+      return _.find(b, function(key) {
+        return fn.apply(this, [value, key]);
+      }.bind(this));
+    }.bind(this));
+  };
+  conditions['ForAnyValue:' + condition] = function(a, b) {
+    if (!_.isArray(a)) a = [a];
+    else return _.find(a, function(value) {
+      return _.find(b, function(key) {
+        return fn.apply(this, [value, key]);
+      }.bind(this));
+    }.bind(this));
+  };
+
 });
 
 module.exports = conditions;

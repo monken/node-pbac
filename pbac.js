@@ -115,14 +115,22 @@ _.extend(PBAC.prototype, {
   evaluateCondition: function evaluateCondition(condition, variables) {
     if (!_.isPlainObject(condition)) return true;
     var conditions = this.conditions;
-    return _.all(_.keys(condition), function(key) {
+    return _.every(_.keys(condition), function(key) {
       var expression = condition[key],
         variable = _.keys(expression)[0],
-        values = _.values(expression)[0];
+        values = _.values(expression)[0],
+        prefix;
       values = _.isArray(values) ? values : [values];
-      return _.find(values, function(value) {
-        return conditions[key].call(this, this.getVariableValue(variable, variables), value);
-      }.bind(this));
+      if(key.indexOf(':') !== -1) {
+        prefix = key.substr(0, key.indexOf(':'));
+      }
+      if(prefix === 'ForAnyValue' || prefix === 'ForAllValues') {
+        return conditions[key].call(this, this.getVariableValue(variable, variables), values);
+      } else {
+        return _.find(values, function(value) {
+          return conditions[key].call(this, this.getVariableValue(variable, variables), value);
+        }.bind(this));
+      }
     }.bind(this));
   },
   throw: function (name, message) {

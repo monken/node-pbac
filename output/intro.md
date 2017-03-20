@@ -85,9 +85,9 @@ Constructs a policy evaluator.
 
 Tests an object against the policies and determines if the object passes.
 The method will first try to find a policy with an explicit `Deny` for the combination of
-`resource`, `action` and `condition` (matching policy). If such policy exists, `evaulate` returns false.
+`resource`, `action` and `condition` (matching policy). If such policy exists, `evaluate` returns false.
 If there is no explicit deny the method will look for a matching policy with an explicit `Allow`.
-`evaulate` will return `true` if such a policy is found. If no matching can be found at all,
+`evaluate` will return `true` if such a policy is found. If no matching can be found at all,
 `evaluate` will return `false`. Please find a more thorough explanation of this process at https://docs.aws.amazon.com/IAM/latest/UserGuide/AccessPolicyLanguage_EvaluationLogic.html.
 
 ```javascript
@@ -149,4 +149,3 @@ This would translate to the variables `req:IpAddress`, `req:UserName` and `sessi
 
 
 * * *
-
