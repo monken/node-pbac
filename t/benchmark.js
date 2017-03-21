@@ -27,4 +27,4 @@ for (var i = 0; i < count; i++) {
 
 var stop = new Date().getTime();
 
-console.log(`took ${stop-start} ms or ${(stop-start)/count} ms per evaluation`)
+console.log('took ' + (stop - start) + ' ms or ' + (stop-start)/count + ' ms per evaluation');
