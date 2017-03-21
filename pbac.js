@@ -57,6 +57,7 @@ _.extend(PBAC.prototype, {
     options = _.extend({
       action: '',
       resource: '',
+      principal: {},
       variables: {},
     }, options || {});
     if (this.filterPoliciesBy({
@@ -64,12 +65,14 @@ _.extend(PBAC.prototype, {
         resource: options.resource,
         action: options.action,
         variables: options.variables,
+        principal: options.principal,
       })) return false;
     if (this.filterPoliciesBy({
         effect: 'Allow',
         resource: options.resource,
         action: options.action,
         variables: options.variables,
+        principal: options.principal,
       })) return true;
     return false;
 
@@ -77,7 +80,10 @@ _.extend(PBAC.prototype, {
   filterPoliciesBy: function filterPoliciesBy(options) {
     return _(this.policies).pluck('Statement').flatten().find(function(statement, idx) {
       if (statement.Effect !== options.effect) return false;
-      var actionApplies = false;
+      if (statement.Principal && !this.evaluatePrincipal(statement.Principal, options.principal, options.variables))
+        return false;
+      if (statement.NotPrincipal && this.evaluateNotPrincipal(statement.NotPrincipal, options.principal, options.variables))
+        return false;
       if (statement.Resource && !this.evaluateResource(statement.Resource, options.resource, options.variables))
         return false;
       if (statement.NotResource && this.evaluateResource(statement.NotResource, options.resource, options.variables))
@@ -100,6 +106,17 @@ _.extend(PBAC.prototype, {
       return variables[parts[0]][parts[1]];
     else return variable;
   },
+  evaluateNotPrincipal: function evaluateNotPrincipal(principals, reference) {
+    return _.keys(reference).find(function(key) {
+      return this.conditions['ForAllValues:StringEquals'].call(this, principals[key], reference[key]);
+    }.bind(this));
+  },
+  evaluatePrincipal: function evaluatePrincipal(principals, reference) {
+    return _.keys(reference).find(function(key) {
+      if(_.isEmpty(reference[key])) return false;
+      return this.conditions['ForAnyValue:StringEquals'].call(this, principals[key], reference[key]);
+    }.bind(this));
+  },
   evaluateAction: function evaluateAction(actions, reference) {
     return _.find(actions, function(action) {
       return this.conditions.StringLike.call(this, reference, action);
@@ -121,10 +138,10 @@ _.extend(PBAC.prototype, {
         values = _.values(expression)[0],
         prefix;
       values = _.isArray(values) ? values : [values];
-      if(key.indexOf(':') !== -1) {
+      if (key.indexOf(':') !== -1) {
         prefix = key.substr(0, key.indexOf(':'));
       }
-      if(prefix === 'ForAnyValue' || prefix === 'ForAllValues') {
+      if (prefix === 'ForAnyValue' || prefix === 'ForAllValues') {
         return conditions[key].call(this, this.getVariableValue(variable, variables), values);
       } else {
         return _.find(values, function(value) {
@@ -133,7 +150,7 @@ _.extend(PBAC.prototype, {
       }
     }.bind(this));
   },
-  throw: function (name, message) {
+  throw: function(name, message) {
     var args = [].slice.call(arguments, 2);
     args.unshift(message);
     var e = new Error();

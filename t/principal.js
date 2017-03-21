@@ -2,7 +2,7 @@ var assert = require('assert'),
   PBAC = require('../pbac');
 
 var tests = [{
-  name: 'explicit deny overwrites allow',
+  name: 'Principal',
   policies: [{
     "Version": "2012-10-17",
     "Statement": [{
@@ -22,14 +22,6 @@ var tests = [{
       "Resource": [
         "*"
       ]
-    }, {
-      "Effect": "Allow",
-      "Action": [
-        "iam:CreateUser"
-      ],
-      "Resource": [
-        "*"
-      ]
     }]
   }],
   tests: [{
@@ -37,14 +29,35 @@ var tests = [{
       action: 'iam:CreateUser',
       resource: 'abcfoo',
       principal: {
-        "AWS": []
+        AWS: []
       }
     },
     result: false,
   }, {
     params: {
-      action: 'iam:UpdateUser',
+      action: 'iam:CreateUser',
       resource: 'abcfoo',
+      principal: {
+        Service: ['s3.amazonaws.com']
+      }
+    },
+    result: false,
+  }, {
+    params: {
+      action: 'iam:CreateUser',
+      resource: 'abcfoo',
+      principal: {
+        AWS: ["arn:aws:iam::111122223333:root", "arn:aws:iam::111122223333:role/roleB"]
+      }
+    },
+    result: true,
+  }, {
+    params: {
+      action: 'iam:CreateUser',
+      resource: 'abcfoo',
+      principal: {
+        AWS: ["arn:aws:iam::111122223333:root", "arn:aws:iam::111122223333:role/roleB", "arn:aws:iam::111122223333:role/roleC"]
+      }
     },
     result: true,
   }, {
@@ -55,16 +68,30 @@ var tests = [{
     result: false,
   }]
 }, {
-  name: 'implicit deny with NotAction',
+  name: 'NotPrincipal',
   policies: [{
     "Version": "2012-10-17",
     "Statement": [{
       "Effect": "Allow",
-      "NotAction": [
+      "Action": [
         "iam:CreateUser"
       ],
-      "NotResource": [
-        "abc*"
+      "Resource": [
+        "*"
+      ]
+    }, {
+      "Effect": "Deny",
+      "Action": [
+        "iam:CreateUser"
+      ],
+      "NotPrincipal": {
+        "AWS": [
+          "arn:aws:iam::444455556666:user/Bob",
+          "arn:aws:iam::444455556666:root"
+        ]
+      },
+      "Resource": [
+        "*"
       ]
     }]
   }],
@@ -75,23 +102,33 @@ var tests = [{
     result: false,
   }, {
     params: {
-      action: 'iam:UpdateUser',
+      action: 'iam:CreateUser',
+      principal: {
+        AWS: ['arn:aws:iam::444455556666:root']
+      }
+    },
+    result: false,
+  }, {
+    params: {
+      action: 'iam:CreateUser',
+      principal: {
+        AWS: ['arn:aws:iam::444455556666:user/Bob', 'arn:aws:iam::444455556666:root']
+      }
     },
     result: true,
   }, {
     params: {
-      resource: 'abcfoo',
-      action: 'iam:UpdateUser',
+      action: 'iam:CreateUser',
     },
     result: false,
   }]
 }];
 
-describe('principal', function() {
+describe(__filename, function() {
   tests.forEach(function(test, idx) {
     var pbac = new PBAC(test.policies);
-    it(test.name, function() {
-      test.tests.forEach(function(params) {
+    test.tests.forEach(function(params) {
+      it(test.name, function() {
         assert.equal(!!pbac.evaluate(params.params), params.result);
       });
     });

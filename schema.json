@@ -26,6 +26,8 @@
             "required": ["Action", "NotAction"]
           }, {
             "required": ["Resource", "NotResource"]
+          }, {
+            "required": ["Principal", "NotPrincipal"]
           }]
         }
       }],
@@ -48,6 +50,23 @@
           "type": "array",
           "items": {
             "type": "string"
+          }
+        },
+        "Principal": {
+          "type": "object",
+          "properties": {
+            "AWS": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "Service": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
           }
         },
         "Condition": {

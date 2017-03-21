@@ -102,12 +102,10 @@ var tests = [{
 describe(__filename, function() {
   tests.forEach(function(test, idx) {
     var pbac = new PBAC(test.policies);
-    it(test.name, function() {
-      test.tests.forEach(function(params) {
+    test.tests.forEach(function(params) {
+      it(test.name, function() {
         assert.equal(!!pbac.evaluate(params.params), params.result);
       });
     });
-
   });
-
 });

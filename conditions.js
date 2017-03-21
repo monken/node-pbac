@@ -122,7 +122,7 @@ _.forEach(conditions, function(fn, condition) {
   };
   conditions['ForAllValues:' + condition] = function(a, b) {
     if (!_.isArray(a)) a = [a];
-    else return _.every(a, function(value) {
+    return _.every(a, function(value) {
       return _.find(b, function(key) {
         return fn.apply(this, [value, key]);
       }.bind(this));
@@ -130,7 +130,7 @@ _.forEach(conditions, function(fn, condition) {
   };
   conditions['ForAnyValue:' + condition] = function(a, b) {
     if (!_.isArray(a)) a = [a];
-    else return _.find(a, function(value) {
+    return _.find(a, function(value) {
       return _.find(b, function(key) {
         return fn.apply(this, [value, key]);
       }.bind(this));
