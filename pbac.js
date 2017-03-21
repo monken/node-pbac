@@ -107,12 +107,12 @@ _.extend(PBAC.prototype, {
     else return variable;
   },
   evaluateNotPrincipal: function evaluateNotPrincipal(principals, reference) {
-    return _.keys(reference).find(function(key) {
+    return _(reference).keys().find(function(key) {
       return this.conditions['ForAllValues:StringEquals'].call(this, principals[key], reference[key]);
     }.bind(this));
   },
   evaluatePrincipal: function evaluatePrincipal(principals, reference) {
-    return _.keys(reference).find(function(key) {
+    return _(reference).keys().find(function(key) {
       if(_.isEmpty(reference[key])) return false;
       return this.conditions['ForAnyValue:StringEquals'].call(this, principals[key], reference[key]);
     }.bind(this));
