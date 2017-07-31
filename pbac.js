@@ -1,60 +1,73 @@
 'use strict';
-var _ = require('lodash'),
-  policySchema = require('./schema.json'),
-  conditions = require('./conditions'),
-  ZSchema = require('z-schema'),
-  util = require('util');
+const policySchema = require('./schema.json');
+const conditions = require('./conditions');
+const ZSchema = require('z-schema');
+const util = require('util');
 
-var PBAC = function constructor(policies, options) {
-  options = _.isPlainObject(options) ? options : {};
-  var myconditions = _.isPlainObject(options.conditions) ? _.extend(options.conditions, conditions) : conditions;
-  _.extend(this, {
-    policies: [],
-    validateSchema: _.isBoolean(options.validateSchema) ? options.validateSchema : true,
-    validatePolicies: _.isBoolean(options.validatePolicies) ? options.validatePolicies : true,
-    schema: _.isPlainObject(options.schema) ? options.schema : policySchema,
-    conditions: myconditions,
-  });
+const isPlainObject = require('lodash/isPlainObject');
+const isBoolean = require('lodash/isBoolean');
+const isArray = require('lodash/isArray');
+const isUndefined = require('lodash/isUndefined');
+const isEmpty = require('lodash/isEmpty');
+const forEach = require('lodash/forEach');
+const every = require('lodash/every');
+const get = require('lodash/get');
+
+const flow = require('lodash/fp/flow');
+const map = require('lodash/fp/map');
+const flatten = require('lodash/fp/flatten');
+const find = require('lodash/fp/find');
+
+const PBAC = function constructor(policies, options) {
+  options = isPlainObject(options) ? options : {};
+  const myconditions = isPlainObject(options.conditions) ? Object.assign(options.conditions, conditions) : conditions;
+
+  this.policies = [];
+  this.validateSchema = isBoolean(options.validateSchema) ? options.validateSchema : true;
+  this.validatePolicies = isBoolean(options.validatePolicies) ? options.validatePolicies : true;
+  this.schema = isPlainObject(options.schema) ? options.schema : policySchema;
+  this.conditions = myconditions;
+
   this.addConditionsToSchema();
   if (this.validateSchema) this._validateSchema();
   this.add(policies);
 };
 
-_.extend(PBAC.prototype, {
+Object.assign(PBAC.prototype, {
   add: function add(policies) {
-    policies = _.isArray(policies) ? policies : [policies];
+    policies = isArray(policies) ? policies : [policies];
     if (this.validatePolicies) this.validate(policies);
     this.policies.push.apply(this.policies, policies);
   },
   addConditionsToSchema: function addConditionsToSchema() {
-    var definition = _.get(this.schema, 'definitions.Condition');
+    const definition = get(this.schema, 'definitions.Condition');
     if (!definition) return;
-    var props = definition.properties = {};
-    _.forEach(this.conditions, function(condition, name) {
+    const props = definition.properties = {};
+    forEach(this.conditions, function(condition, name) {
       props[name] = {
         type: 'object'
       };
     }, this);
   },
-  _validateSchema: function() {
-    var validator = new ZSchema();
+  _validateSchema() {
+    const validator = new ZSchema();
     if (!validator.validateSchema(this.schema))
       this.throw('schema validation failed with', validator.getLastError());
   },
-  validate: function validate(policies) {
-    policies = _.isArray(policies) ? policies : [policies];
-    var validator = new ZSchema({
+  validate(policies) {
+    policies = isArray(policies) ? policies : [policies];
+    const validator = new ZSchema({
       noExtraKeywords: true,
     });
-    return _.all(policies, function(policy) {
-      var result = validator.validate(policy, this.schema);
+    return every(policies, policy => {
+      const result = validator.validate(policy, this.schema);
       if (!result)
         this.throw('policy validation failed with', validator.getLastError());
       return result;
-    }.bind(this));
+    });
   },
-  evaluate: function evaluate(options) {
-    options = _.extend({
+  evaluate(options) {
+    options = Object.assign({
       action: '',
       resource: '',
       principal: {},
@@ -67,97 +80,102 @@ _.extend(PBAC.prototype, {
         context: options.context,
         principal: options.principal,
       })) return false;
-    if (this.filterPoliciesBy({
-        effect: 'Allow',
-        resource: options.resource,
-        action: options.action,
-        context: options.context,
-        principal: options.principal,
-      })) return true;
-    return false;
-
+    return !!this.filterPoliciesBy({
+      effect: 'Allow',
+      resource: options.resource,
+      action: options.action,
+      context: options.context,
+      principal: options.principal,
+    });
   },
-  filterPoliciesBy: function filterPoliciesBy(options) {
-    return _(this.policies).pluck('Statement').flatten().find(function(statement, idx) {
-      if (statement.Effect !== options.effect) return false;
-      if (statement.Principal && !this.evaluatePrincipal(statement.Principal, options.principal, options.context))
-        return false;
-      if (statement.NotPrincipal && this.evaluateNotPrincipal(statement.NotPrincipal, options.principal, options.context))
-        return false;
-      if (statement.Resource && !this.evaluateResource(statement.Resource, options.resource, options.context))
-        return false;
-      if (statement.NotResource && this.evaluateResource(statement.NotResource, options.resource, options.context))
-        return false;
-      if (statement.Action && !this.evaluateAction(statement.Action, options.action))
-        return false;
-      if (statement.NotAction && this.evaluateAction(statement.NotAction, options.action))
-        return false;
-      return this.evaluateCondition(statement.Condition, options.context);
-    }.bind(this));
+  filterPoliciesBy(options) {
+    return flow(
+      map('Statement'),
+      flatten,
+      find(statement => {
+        if (statement.Effect !== options.effect) return false;
+        if (statement.Principal && !this.evaluatePrincipal(statement.Principal, options.principal, options.context))
+          return false;
+        if (statement.NotPrincipal && this.evaluateNotPrincipal(statement.NotPrincipal, options.principal, options.context))
+          return false;
+        if (statement.Resource && !this.evaluateResource(statement.Resource, options.resource, options.context))
+          return false;
+        if (statement.NotResource && this.evaluateResource(statement.NotResource, options.resource, options.context))
+          return false;
+        if (statement.Action && !this.evaluateAction(statement.Action, options.action))
+          return false;
+        if (statement.NotAction && this.evaluateAction(statement.NotAction, options.action))
+          return false;
+        return this.evaluateCondition(statement.Condition, options.context);
+    })
+  )(this.policies);
   },
-  interpolateValue: function interpolateValue(value, context) {
-    return value.replace(/\${(.+?)}/g, function(match, key) {
-      return this.getContextValue(key, context);
-    }.bind(this));
+  interpolateValue(value, variables) {
+    return value.replace(/\${(.+?)}/g, (match, variable) => {
+      return this.getVariableValue(variable, variables);
+    });
   },
-  getContextValue: function getContextValue(key, context) {
+  getContextValue(key, context) {
     var parts = key.split(':');
-    if (_.isPlainObject(context[parts[0]]) && !_.isUndefined(context[parts[0]][parts[1]]))
+    if (isPlainObject(context[parts[0]]) && !isUndefined(context[parts[0]][parts[1]]))
       return context[parts[0]][parts[1]];
     else return key;
   },
-  evaluateNotPrincipal: function evaluateNotPrincipal(principals, reference) {
-    return _(reference).keys().find(function(key) {
+  getVariableValue(variable, variables) {
+    const parts = variable.split(':');
+    if (isPlainObject(variables[parts[0]]) && !isUndefined(variables[parts[0]][parts[1]]))
+      return variables[parts[0]][parts[1]];
+    else return variable;
+  },
+  evaluateNotPrincipal(principals, reference) {
+    return Object.keys(reference).find(key => {
       return this.conditions['ForAllValues:StringEquals'].call(this, principals[key], reference[key]);
-    }.bind(this));
+    });
   },
-  evaluatePrincipal: function evaluatePrincipal(principals, reference) {
-    return _(reference).keys().find(function(key) {
-      if(_.isEmpty(reference[key])) return false;
+  evaluatePrincipal(principals, reference) {
+    return Object.keys(reference).find(key => {
+      if(isEmpty(reference[key])) return false;
       return this.conditions['ForAnyValue:StringEquals'].call(this, principals[key], reference[key]);
-    }.bind(this));
+    });
   },
-  evaluateAction: function evaluateAction(actions, reference) {
-    return _.find(actions, function(action) {
+  evaluateAction(actions, reference) {
+    return actions.find(action => {
       return this.conditions.StringLike.call(this, reference, action);
-    }.bind(this));
+    });
   },
-  evaluateResource: function evaluateResource(resources, reference, context) {
-    resources = _.isArray(resources) ? resources : [resources];
-    return _.find(resources, function(resource) {
-      var value = this.interpolateValue(resource, context);
+  evaluateResource(resources, reference, context) {
+    resources = isArray(resources) ? resources : [resources];
+    return resources.find(resource => {
+      const value = this.interpolateValue(resource, context);
       return this.conditions.StringLike.call(this, reference, value);
-    }.bind(this));
+    });
   },
-  evaluateCondition: function evaluateCondition(condition, context) {
-    if (!_.isPlainObject(condition)) return true;
-    var conditions = this.conditions;
-    return _.every(_.keys(condition), function(key) {
-      var expression = condition[key],
-        contextKey = _.keys(expression)[0],
-        values = _.values(expression)[0],
-        prefix;
-      values = _.isArray(values) ? values : [values];
+  evaluateCondition(condition, context) {
+    if (!isPlainObject(condition)) return true;
+    const conditions = this.conditions;
+    return every(Object.keys(condition), key => {
+      const expression = condition[key];
+      const contextKey = Object.keys(expression)[0];
+      let values = expression[contextKey];
+      values = isArray(values) ? values : [values];
+
+      let prefix;
       if (key.indexOf(':') !== -1) {
         prefix = key.substr(0, key.indexOf(':'));
       }
       if (prefix === 'ForAnyValue' || prefix === 'ForAllValues') {
         return conditions[key].call(this, this.getContextValue(contextKey, context), values);
       } else {
-        return _.find(values, function(value) {
-          return conditions[key].call(this, this.getContextValue(contextKey, context), value);
-        }.bind(this));
+        return values.find(value => conditions[key].call(this, this.getContextValue(contextKey, context), value));
       }
-    }.bind(this));
-  },
-  throw: function(name, message) {
-    var args = [].slice.call(arguments, 2);
-    args.unshift(message);
-    var e = new Error();
-    _.extend(e, {
-      name: name,
-      message: util.format.apply(util, args)
     });
+  },
+  throw(name, message) {
+    const args = [].slice.call(arguments, 2);
+    args.unshift(message);
+    const e = new Error();
+    e.name = name;
+    e.message = util.format.apply(util, args);
     throw e;
   },
 });

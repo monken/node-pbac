@@ -4,7 +4,7 @@
   "description": "AWS IAM Policy inspired and (mostly) compatible evaluation engine",
   "dependencies": {
     "ipcheck": "^0.1.0",
-    "lodash": "^3.10.0",
+    "lodash": "^4.17.4",
     "z-schema": "^3.12.0"
   },
   "scripts": {
