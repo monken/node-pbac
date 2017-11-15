@@ -145,7 +145,7 @@ _.extend(PBAC.prototype, {
         return conditions[key].call(this, this.getVariableValue(variable, variables), values);
       } else {
         return _.find(values, function(value) {
-          return conditions[key].call(this, this.getVariableValue(variable, variables), value);
+          return conditions[key].call(this, this.getVariableValue(variable, variables), this.interpolateValue(value, variables));
         }.bind(this));
       }
     }.bind(this));
