@@ -96,6 +96,7 @@ _.extend(PBAC.prototype, {
     }.bind(this));
   },
   interpolateValue: function interpolateValue(value, variables) {
+    if (!_.isString(value)) return value;
     return value.replace(/\${(.+?)}/g, function(match, variable) {
       return this.getVariableValue(variable, variables);
     }.bind(this));
@@ -104,7 +105,6 @@ _.extend(PBAC.prototype, {
     var parts = variable.split(':');
     if (_.isPlainObject(variables[parts[0]]) && !_.isUndefined(variables[parts[0]][parts[1]]))
       return variables[parts[0]][parts[1]];
-    else return variable;
   },
   evaluateNotPrincipal: function evaluateNotPrincipal(principals, reference) {
     return _(reference).keys().find(function(key) {
@@ -144,9 +144,9 @@ _.extend(PBAC.prototype, {
       if (prefix === 'ForAnyValue' || prefix === 'ForAllValues') {
         return conditions[key].call(this, this.getVariableValue(variable, variables), values);
       } else {
-        return _.find(values, function(value) {
+        return !_.isUndefined(_.find(values, function(value) {
           return conditions[key].call(this, this.getVariableValue(variable, variables), this.interpolateValue(value, variables));
-        }.bind(this));
+        }.bind(this)));
       }
     }.bind(this));
   },
