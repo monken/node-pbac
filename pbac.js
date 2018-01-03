@@ -105,7 +105,6 @@ _.extend(PBAC.prototype, {
     var parts = variable.split(':');
     if (_.isPlainObject(variables[parts[0]]) && !_.isUndefined(variables[parts[0]][parts[1]]))
       return variables[parts[0]][parts[1]];
-    return undefined;
   },
   evaluateNotPrincipal: function evaluateNotPrincipal(principals, reference) {
     return _(reference).keys().find(function(key) {
