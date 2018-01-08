@@ -58,20 +58,20 @@ _.extend(PBAC.prototype, {
       action: '',
       resource: '',
       principal: {},
-      variables: {},
+      context: options.variables || {},
     }, options || {});
     if (this.filterPoliciesBy({
         effect: 'Deny',
         resource: options.resource,
         action: options.action,
-        variables: options.variables,
+        context: options.context,
         principal: options.principal,
       })) return false;
     if (this.filterPoliciesBy({
         effect: 'Allow',
         resource: options.resource,
         action: options.action,
-        variables: options.variables,
+        context: options.context,
         principal: options.principal,
       })) return true;
     return false;
@@ -80,31 +80,31 @@ _.extend(PBAC.prototype, {
   filterPoliciesBy: function filterPoliciesBy(options) {
     return _(this.policies).pluck('Statement').flatten().find(function(statement, idx) {
       if (statement.Effect !== options.effect) return false;
-      if (statement.Principal && !this.evaluatePrincipal(statement.Principal, options.principal, options.variables))
+      if (statement.Principal && !this.evaluatePrincipal(statement.Principal, options.principal, options.context))
         return false;
-      if (statement.NotPrincipal && this.evaluateNotPrincipal(statement.NotPrincipal, options.principal, options.variables))
+      if (statement.NotPrincipal && this.evaluateNotPrincipal(statement.NotPrincipal, options.principal, options.context))
         return false;
-      if (statement.Resource && !this.evaluateResource(statement.Resource, options.resource, options.variables))
+      if (statement.Resource && !this.evaluateResource(statement.Resource, options.resource, options.context))
         return false;
-      if (statement.NotResource && this.evaluateResource(statement.NotResource, options.resource, options.variables))
+      if (statement.NotResource && this.evaluateResource(statement.NotResource, options.resource, options.context))
         return false;
       if (statement.Action && !this.evaluateAction(statement.Action, options.action))
         return false;
       if (statement.NotAction && this.evaluateAction(statement.NotAction, options.action))
         return false;
-      return this.evaluateCondition(statement.Condition, options.variables);
+      return this.evaluateCondition(statement.Condition, options.context);
     }.bind(this));
   },
-  interpolateValue: function interpolateValue(value, variables) {
-    return value.replace(/\${(.+?)}/g, function(match, variable) {
-      return this.getVariableValue(variable, variables);
+  interpolateValue: function interpolateValue(value, context) {
+    return value.replace(/\${(.+?)}/g, function(match, key) {
+      return this.getContextValue(key, context);
     }.bind(this));
   },
-  getVariableValue: function getVariableValue(variable, variables) {
-    var parts = variable.split(':');
-    if (_.isPlainObject(variables[parts[0]]) && !_.isUndefined(variables[parts[0]][parts[1]]))
-      return variables[parts[0]][parts[1]];
-    else return variable;
+  getContextValue: function getContextValue(key, context) {
+    var parts = key.split(':');
+    if (_.isPlainObject(context[parts[0]]) && !_.isUndefined(context[parts[0]][parts[1]]))
+      return context[parts[0]][parts[1]];
+    else return key;
   },
   evaluateNotPrincipal: function evaluateNotPrincipal(principals, reference) {
     return _(reference).keys().find(function(key) {
@@ -122,19 +122,19 @@ _.extend(PBAC.prototype, {
       return this.conditions.StringLike.call(this, reference, action);
     }.bind(this));
   },
-  evaluateResource: function evaluateResource(resources, reference, variables) {
+  evaluateResource: function evaluateResource(resources, reference, context) {
     resources = _.isArray(resources) ? resources : [resources];
     return _.find(resources, function(resource) {
-      var value = this.interpolateValue(resource, variables);
+      var value = this.interpolateValue(resource, context);
       return this.conditions.StringLike.call(this, reference, value);
     }.bind(this));
   },
-  evaluateCondition: function evaluateCondition(condition, variables) {
+  evaluateCondition: function evaluateCondition(condition, context) {
     if (!_.isPlainObject(condition)) return true;
     var conditions = this.conditions;
     return _.every(_.keys(condition), function(key) {
       var expression = condition[key],
-        variable = _.keys(expression)[0],
+        contextKey = _.keys(expression)[0],
         values = _.values(expression)[0],
         prefix;
       values = _.isArray(values) ? values : [values];
@@ -142,10 +142,10 @@ _.extend(PBAC.prototype, {
         prefix = key.substr(0, key.indexOf(':'));
       }
       if (prefix === 'ForAnyValue' || prefix === 'ForAllValues') {
-        return conditions[key].call(this, this.getVariableValue(variable, variables), values);
+        return conditions[key].call(this, this.getContextValue(contextKey, context), values);
       } else {
         return _.find(values, function(value) {
-          return conditions[key].call(this, this.getVariableValue(variable, variables), value);
+          return conditions[key].call(this, this.getContextValue(contextKey, context), value);
         }.bind(this));
       }
     }.bind(this));
