@@ -65,11 +65,21 @@ var conditions = {
     if(!_.isString(b) || !(a instanceof Buffer)) return false;
     return !bufferEquals(a, new Buffer(b, 'base64'));
   },
+  ArnLike: function ArnLike(a, b) {
+    if (!_.isString(b)) return false;
+    return new RegExp('^' +
+        b.replace(/[\-\[\]\/\{\}\(\)\+\.\\\^\$\|]/g, "\\$&")
+        .replace(/\*/g, '[^:]*') // TODO: check if last part of ARN can contain ':'
+        .replace(/\?/g, '.') + '$')
+        .test(a);
+  },
+  ArnNotLike: function StringNotLike(a, b) {
+    if (!_.isString(b)) return false;
+    return !this.conditions.ArnLike.apply(this, arguments);
+  },
   /*
   ArnEquals
   ArnNotEquals
-  ArnLike
-  ArnNotLike
   */
   Null: function(a, b) {
     if (!_.isBoolean(b)) return false;

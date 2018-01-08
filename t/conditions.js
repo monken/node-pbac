@@ -4,6 +4,11 @@ var assert = require('assert'),
 var conditions = require('../conditions');
 
 var tests = {
+  ArnLike: [
+    ['arn:aws:s3:::mybucket','arn:aws:s3:*:*:mybucket*', true],
+    ['arn:aws:s3:123412341234:eu-west-1:mybucket-test','arn:aws:s3:*:*:mybucket*', true],
+    ['arn:aws:s3::::mybucket-test','arn:aws:s3:*:*:mybucket*', false],
+  ],
   StringLike: [
     ['foo', 'foo', true],
     ['fooo', 'foo', false],
