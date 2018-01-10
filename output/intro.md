@@ -140,7 +140,7 @@ var context = {
       UserName: 'testuser',
     },
     session: {
-      LoggedInDate: '20150929T15:12:42Z',
+      LoggedInDate: '2015-09-29T15:12:42Z',
   },
 };
 ```
