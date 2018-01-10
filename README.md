@@ -6,8 +6,6 @@
 
 Use the power and flexibility of the AWS IAM Policy syntax in your own application to manage access control. For more details on AWS IAM Policies have a look at https://docs.aws.amazon.com/IAM/latest/UserGuide/policies_overview.html.
 
-**Note:** Conditions `ArnEquals`, `ArnNotEquals` are not supported at the moment.
-
 ## Installation
 
 ```
