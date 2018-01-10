@@ -77,10 +77,12 @@ var conditions = {
     if (!_.isString(b)) return false;
     return !this.conditions.ArnLike.apply(this, arguments);
   },
-  /*
-  ArnEquals
-  ArnNotEquals
-  */
+  ArnEquals: function ArnEquals(a, b) {
+    return this.conditions.ArnLike(a, b);
+  },
+  ArnNotEquals: function ArnEquals(a, b) {
+    return this.conditions.ArnNotLike(a, b);
+  },
   Null: function(a, b) {
     if (!_.isBoolean(b)) return false;
     return b ? _.isUndefined(a) : !_.isUndefined(a);
