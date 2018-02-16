@@ -1,6 +1,5 @@
 'use strict';
 const ipcheck = require('ipcheck');
-const bufferEquals = require('./lib/bufferequals');
 
 const isString = require('lodash/isString');
 const isBoolean = require('lodash/isBoolean');
@@ -69,11 +68,11 @@ const conditions = {
   },
   BinaryEquals(a, b) {
     if(!isString(b) || !(a instanceof Buffer)) return false;
-    return bufferEquals(a, new Buffer(b, 'base64'));
+    return a.equals(new Buffer(b, 'base64'));
   },
   BinaryNotEquals(a, b) {
     if(!isString(b) || !(a instanceof Buffer)) return false;
-    return !bufferEquals(a, new Buffer(b, 'base64'));
+    return !a.equals(new Buffer(b, 'base64'));
   },
   ArnLike: function ArnLike(a, b) {
     if (!isString(b)) return false;
