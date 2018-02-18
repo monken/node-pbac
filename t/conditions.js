@@ -19,6 +19,7 @@ var tests = {
     ['fooxyqkhwebar', 'fo*bar', true],
     ['', '*', true],
     [undefined, '*', true],
+    ['/myapp/users/test', '/myapp/users/*', true],
   ],
   StringLikeIfExists: [
     ['foo', 'foo', true],
