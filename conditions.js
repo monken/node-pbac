@@ -1,14 +1,14 @@
 'use strict';
 const ipcheck = require('ipcheck');
 
-const isString = require('lodash/isString');
-const isBoolean = require('lodash/isBoolean');
-const isNumber = require('lodash/isNumber');
-const isArray = require('lodash/isArray');
-const isUndefined = require('lodash/isUndefined');
-const isEmpty = require('lodash/isEmpty');
-const forEach = require('lodash/forEach');
-const every = require('lodash/every');
+const isString = require('lodash/isString'),
+  isBoolean = require('lodash/isBoolean'),
+  isNumber = require('lodash/isNumber'),
+  isArray = require('lodash/isArray'),
+  isUndefined = require('lodash/isUndefined'),
+  isEmpty = require('lodash/isEmpty'),
+  forEach = require('lodash/forEach'),
+  every = require('lodash/every');
 
 
 const conditions = {
@@ -67,20 +67,20 @@ const conditions = {
     return !this.conditions.DateGreaterThan.apply(this, arguments);
   },
   BinaryEquals(a, b) {
-    if(!isString(b) || !(a instanceof Buffer)) return false;
+    if (!isString(b) || !(a instanceof Buffer)) return false;
     return a.equals(new Buffer(b, 'base64'));
   },
   BinaryNotEquals(a, b) {
-    if(!isString(b) || !(a instanceof Buffer)) return false;
+    if (!isString(b) || !(a instanceof Buffer)) return false;
     return !a.equals(new Buffer(b, 'base64'));
   },
   ArnLike: function ArnLike(a, b) {
     if (!isString(b)) return false;
     return new RegExp('^' +
-        b.replace(/[\-\[\]\/\{\}\(\)\+\.\\\^\$\|]/g, "\\$&")
+      b.replace(/[\-\[\]\/\{\}\(\)\+\.\\\^\$\|]/g, "\\$&")
         .replace(/\*/g, '[^:]*') // TODO: check if last part of ARN can contain ':'
         .replace(/\?/g, '.') + '$')
-        .test(a);
+      .test(a);
   },
   ArnNotLike: function StringNotLike(a, b) {
     if (!isString(b)) return false;
@@ -121,7 +121,7 @@ const conditions = {
   StringLike(a, b) {
     if (!isString(b)) return false;
     return new RegExp('^' +
-        b.replace(/[\-\[\]\/\{\}\(\)\+\.\\\^\$\|]/g, "\\$&")
+      b.replace(/[\-\[\]\/\{\}\(\)\+\.\\\^\$\|]/g, "\\$&")
         .replace(/\*/g, '.*')
         .replace(/\?/g, '.') + '$')
       .test(a);
@@ -136,12 +136,12 @@ const conditions = {
   },
 };
 
-forEach(conditions, function(fn, condition) {
-  conditions[condition + 'IfExists'] = function(a, b) {
+forEach(conditions, function (fn, condition) {
+  conditions[condition + 'IfExists'] = function (a, b) {
     if (isUndefined(a)) return true;
     else return fn.apply(this, arguments);
   };
-  conditions['ForAllValues:' + condition] = function(a, b) {
+  conditions['ForAllValues:' + condition] = function (a, b) {
     if (!isArray(a)) a = [a];
     return every(a, value => {
       return b.find(key => {
@@ -149,7 +149,7 @@ forEach(conditions, function(fn, condition) {
       });
     });
   };
-  conditions['ForAnyValue:' + condition] = function(a, b) {
+  conditions['ForAnyValue:' + condition] = function (a, b) {
     if (!isArray(a)) a = [a];
     return a.find(value => {
       return b.find(key => {
