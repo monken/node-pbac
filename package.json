@@ -1,6 +1,6 @@
 {
   "name": "pbac",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "AWS IAM Policy inspired and (mostly) compatible evaluation engine",
   "dependencies": {
     "ipcheck": "^0.1.0",
