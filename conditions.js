@@ -1,15 +1,16 @@
 'use strict';
 const ipRangeCheck = require('ip-range-check');
 
-const isString = require('lodash/isString'),
-  isBoolean = require('lodash/isBoolean'),
-  isNumber = require('lodash/isNumber'),
-  isArray = require('lodash/isArray'),
-  isUndefined = require('lodash/isUndefined'),
-  isEmpty = require('lodash/isEmpty'),
-  forEach = require('lodash/forEach'),
-  every = require('lodash/every');
-
+const {
+  isString,
+  isBoolean,
+  isNumber,
+  isArray,
+  isUndefined,
+  isEmpty,
+  forEach,
+  every,
+} = require('lodash');
 
 const conditions = {
   NumericEquals(a, b) {

@@ -4,19 +4,18 @@ const conditions = require('./conditions');
 const ZSchema = require('z-schema');
 const util = require('util');
 
-const isPlainObject = require('lodash/isPlainObject');
-const isBoolean = require('lodash/isBoolean');
-const isArray = require('lodash/isArray');
-const isUndefined = require('lodash/isUndefined');
-const isEmpty = require('lodash/isEmpty');
-const forEach = require('lodash/forEach');
-const every = require('lodash/every');
-const get = require('lodash/get');
+const {
+  isPlainObject,
+  isBoolean,
+  isArray,
+  isUndefined,
+  isEmpty,
+  forEach,
+  every,
+  get,
+} = require('lodash');
 
-const flow = require('lodash/fp/flow');
-const map = require('lodash/fp/map');
-const flatten = require('lodash/fp/flatten');
-const find = require('lodash/fp/find');
+const { flow, map, flatten, find } = require('lodash/fp');
 
 const PBAC = function constructor(policies, options) {
   options = isPlainObject(options) ? options : {};
