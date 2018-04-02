@@ -2,7 +2,6 @@
 const policySchema = require('./schema.json');
 const conditions = require('./conditions');
 const ZSchema = require('z-schema');
-const util = require('util');
 
 const {
   isPlainObject,
@@ -51,7 +50,7 @@ Object.assign(PBAC.prototype, {
   _validateSchema() {
     const validator = new ZSchema();
     if (!validator.validateSchema(this.schema))
-      this.throw('schema validation failed with', validator.getLastError());
+      this.throw('schema validation failed with ' + validator.getLastError());
   },
   validate(policies) {
     policies = isArray(policies) ? policies : [policies];
@@ -60,8 +59,7 @@ Object.assign(PBAC.prototype, {
     });
     return every(policies, policy => {
       const result = validator.validate(policy, this.schema);
-      if (!result)
-        this.throw('policy validation failed with', validator.getLastError());
+      if (!result) this.throw('policy validation failed with ' + validator.getLastError());
       return result;
     });
   },
@@ -170,11 +168,9 @@ Object.assign(PBAC.prototype, {
     });
   },
   throw(name, message) {
-    const args = [].slice.call(arguments, 2);
-    args.unshift(message);
     const e = new Error();
     e.name = name;
-    e.message = util.format.apply(util, args);
+    e.message = message;
     throw e;
   },
 });
