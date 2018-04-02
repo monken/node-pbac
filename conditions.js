@@ -68,12 +68,24 @@ const conditions = {
     return !this.conditions.DateGreaterThan.apply(this, arguments);
   },
   BinaryEquals(a, b) {
-    if (!isString(b) || !(a instanceof Buffer)) return false;
-    return a.equals(new Buffer(b, 'base64'));
+    if (process.env.BROWSER) {
+      if (!isString(b) || !(a instanceof Uint8Array)) return false;
+      const buf = new Uint8Array(atob(b).split('').map(function(s) { return s.charCodeAt(0); }));
+      return a.every(function(x, i) { return x === buf[i]; });
+    } else {
+      if (!isString(b) || !(a instanceof Buffer)) return false;
+      return a.equals(new Buffer(b, 'base64'));
+    }
   },
   BinaryNotEquals(a, b) {
-    if (!isString(b) || !(a instanceof Buffer)) return false;
-    return !a.equals(new Buffer(b, 'base64'));
+    if (process.env.BROWSER) {
+      if (!isString(b) || !(a instanceof Uint8Array)) return false;
+      const buf = new Uint8Array(atob(b).split('').map(function(s) { return s.charCodeAt(0); }));
+      return !a.every(function(x, i) { return x === buf[i]; });
+    } else {
+      if (!isString(b) || !(a instanceof Buffer)) return false;
+      return !a.equals(new Buffer(b, 'base64'));
+    }
   },
   ArnLike: function ArnLike(a, b) {
     if (!isString(b)) return false;
