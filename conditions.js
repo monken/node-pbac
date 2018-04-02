@@ -1,5 +1,5 @@
 'use strict';
-const ipcheck = require('ipcheck');
+const ipRangeCheck = require('ip-range-check');
 
 const isString = require('lodash/isString'),
   isBoolean = require('lodash/isBoolean'),
@@ -97,7 +97,7 @@ const conditions = {
     return b ? isUndefined(a) : !isUndefined(a);
   },
   IpAddress(a, b) {
-    return ipcheck.match(a, b);
+    return ipRangeCheck(a, b || '');
   },
   NotIpAddress() {
     return !this.conditions.IpAddress.apply(this, arguments);

@@ -3,7 +3,7 @@
   "version": "0.2.0",
   "description": "AWS IAM Policy inspired and (mostly) compatible evaluation engine",
   "dependencies": {
-    "ipcheck": "^0.1.0",
+    "ip-range-check": "0.0.2",
     "lodash": "^4.17.5",
     "z-schema": "^3.19.1"
   },
