@@ -11,18 +11,22 @@
     "test": "mocha --bail t/",
     "test:browser": "cross-env BROWSER=1 mocha --bail -r ./browser.js t/",
     "docs": "cat output/intro.md LICENSE > README.md && doctoc --title Contents README.md",
-    "build": "webpack"
+    "build": "webpack",
+    "prepublishOnly": "npm test && npm run test:browser && npm run build"
   },
   "devDependencies": {
-    "atob": "2.1.0",
+    "atob": "^2.1.0",
     "cross-env": "^5.1.4",
     "doctoc": "^1.3.1",
     "jsdox": "^0.4.9",
     "mocha": "^2.2.5",
-    "webpack": "4.4.1",
-    "webpack-cli": "2.0.13"
+    "webpack": "^4.4.1",
+    "webpack-cli": "^2.0.13"
   },
   "files": [
+    "pbac.js",
+    "conditions.js",
+    "schema.json",
     "dist/*"
   ],
   "repository": {
