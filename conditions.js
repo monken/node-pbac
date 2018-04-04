@@ -1,15 +1,16 @@
 'use strict';
-const ipcheck = require('ipcheck');
+const ipaddr = require('ipaddr.js');
 
-const isString = require('lodash/isString'),
-  isBoolean = require('lodash/isBoolean'),
-  isNumber = require('lodash/isNumber'),
-  isArray = require('lodash/isArray'),
-  isUndefined = require('lodash/isUndefined'),
-  isEmpty = require('lodash/isEmpty'),
-  forEach = require('lodash/forEach'),
-  every = require('lodash/every');
-
+const {
+  isString,
+  isBoolean,
+  isNumber,
+  isArray,
+  isUndefined,
+  isEmpty,
+  forEach,
+  every,
+} = require('lodash/fp');
 
 const conditions = {
   NumericEquals(a, b) {
@@ -67,12 +68,24 @@ const conditions = {
     return !this.conditions.DateGreaterThan.apply(this, arguments);
   },
   BinaryEquals(a, b) {
-    if (!isString(b) || !(a instanceof Buffer)) return false;
-    return a.equals(new Buffer(b, 'base64'));
+    if (process.env.BROWSER) {
+      if (!isString(b) || !(a instanceof Uint8Array)) return false;
+      const buf = new Uint8Array(atob(b).split('').map(function(s) { return s.charCodeAt(0); }));
+      return a.every(function(x, i) { return x === buf[i]; });
+    } else {
+      if (!isString(b) || !(a instanceof Buffer)) return false;
+      return a.equals(new Buffer(b, 'base64'));
+    }
   },
   BinaryNotEquals(a, b) {
-    if (!isString(b) || !(a instanceof Buffer)) return false;
-    return !a.equals(new Buffer(b, 'base64'));
+    if (process.env.BROWSER) {
+      if (!isString(b) || !(a instanceof Uint8Array)) return false;
+      const buf = new Uint8Array(atob(b).split('').map(function(s) { return s.charCodeAt(0); }));
+      return !a.every(function(x, i) { return x === buf[i]; });
+    } else {
+      if (!isString(b) || !(a instanceof Buffer)) return false;
+      return !a.equals(new Buffer(b, 'base64'));
+    }
   },
   ArnLike: function ArnLike(a, b) {
     if (!isString(b)) return false;
@@ -97,7 +110,22 @@ const conditions = {
     return b ? isUndefined(a) : !isUndefined(a);
   },
   IpAddress(a, b) {
-    return ipcheck.match(a, b);
+    try {
+      if (!a || !b) return false;
+
+      const addr = ipaddr.parse(a);
+
+      if (b.indexOf('/') !== -1) {
+        const range = ipaddr.parseCIDR(b);
+        return addr.match(range);
+      }
+
+      const bddr = ipaddr.parse(b);
+
+      return addr.toString() === bddr.toString();
+    } catch(error) {
+      return false;
+    }
   },
   NotIpAddress() {
     return !this.conditions.IpAddress.apply(this, arguments);
@@ -136,18 +164,19 @@ const conditions = {
   },
 };
 
-forEach(conditions, function (fn, condition) {
+forEach(function (condition) {
+  const fn = conditions[condition];
   conditions[condition + 'IfExists'] = function (a, b) {
     if (isUndefined(a)) return true;
     else return fn.apply(this, arguments);
   };
   conditions['ForAllValues:' + condition] = function (a, b) {
     if (!isArray(a)) a = [a];
-    return every(a, value => {
+    return every(value => {
       return b.find(key => {
         return fn.call(this, value, key);
       });
-    });
+    }, a);
   };
   conditions['ForAnyValue:' + condition] = function (a, b) {
     if (!isArray(a)) a = [a];
@@ -157,7 +186,6 @@ forEach(conditions, function (fn, condition) {
       });
     });
   };
-
-});
+}, Object.keys(conditions));
 
 module.exports = conditions;

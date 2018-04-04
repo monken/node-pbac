@@ -2,21 +2,21 @@
 const policySchema = require('./schema.json');
 const conditions = require('./conditions');
 const ZSchema = require('z-schema');
-const util = require('util');
 
-const isPlainObject = require('lodash/isPlainObject');
-const isBoolean = require('lodash/isBoolean');
-const isArray = require('lodash/isArray');
-const isUndefined = require('lodash/isUndefined');
-const isEmpty = require('lodash/isEmpty');
-const forEach = require('lodash/forEach');
-const every = require('lodash/every');
-const get = require('lodash/get');
-
-const flow = require('lodash/fp/flow');
-const map = require('lodash/fp/map');
-const flatten = require('lodash/fp/flatten');
-const find = require('lodash/fp/find');
+const {
+  isPlainObject,
+  isBoolean,
+  isArray,
+  isUndefined,
+  isEmpty,
+  forEach,
+  every,
+  get,
+  flow,
+  map,
+  flatten,
+  find,
+} = require('lodash/fp');
 
 const PBAC = function constructor(policies, options) {
   options = isPlainObject(options) ? options : {};
@@ -40,31 +40,30 @@ Object.assign(PBAC.prototype, {
     this.policies.push.apply(this.policies, policies);
   },
   addConditionsToSchema: function addConditionsToSchema() {
-    const definition = get(this.schema, 'definitions.Condition');
+    const definition = get('definitions.Condition', this.schema);
     if (!definition) return;
     const props = definition.properties = {};
-    forEach(this.conditions, function(condition, name) {
+    forEach(function(name) {
       props[name] = {
         type: 'object'
       };
-    }, this);
+    }, Object.keys(this.conditions));
   },
   _validateSchema() {
     const validator = new ZSchema();
     if (!validator.validateSchema(this.schema))
-      this.throw('schema validation failed with', validator.getLastError());
+      this.throw('schema validation failed with ' + validator.getLastError());
   },
   validate(policies) {
     policies = isArray(policies) ? policies : [policies];
     const validator = new ZSchema({
       noExtraKeywords: true,
     });
-    return every(policies, policy => {
+    return every(policy => {
       const result = validator.validate(policy, this.schema);
-      if (!result)
-        this.throw('policy validation failed with', validator.getLastError());
+      if (!result) this.throw('policy validation failed with ' + validator.getLastError());
       return result;
-    });
+    }, policies);
   },
   evaluate(options) {
     options = Object.assign({
@@ -153,7 +152,7 @@ Object.assign(PBAC.prototype, {
   evaluateCondition(condition, context) {
     if (!isPlainObject(condition)) return true;
     const conditions = this.conditions;
-    return every(Object.keys(condition), key => {
+    return every(key => {
       const expression = condition[key];
       const contextKey = Object.keys(expression)[0];
       let values = expression[contextKey];
@@ -168,14 +167,12 @@ Object.assign(PBAC.prototype, {
       } else {
         return values.find(value => conditions[key].call(this, this.getContextValue(contextKey, context), value));
       }
-    });
+    }, Object.keys(condition));
   },
   throw(name, message) {
-    const args = [].slice.call(arguments, 2);
-    args.unshift(message);
     const e = new Error();
     e.name = name;
-    e.message = util.format.apply(util, args);
+    e.message = message;
     throw e;
   },
 });
