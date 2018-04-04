@@ -1,5 +1,5 @@
 'use strict';
-const ipRangeCheck = require('ip-range-check');
+const ipaddr = require('ipaddr.js');
 
 const {
   isString,
@@ -110,7 +110,22 @@ const conditions = {
     return b ? isUndefined(a) : !isUndefined(a);
   },
   IpAddress(a, b) {
-    return ipRangeCheck(a, b || '');
+    try {
+      if (!a || !b) return false;
+
+      const addr = ipaddr.parse(a);
+
+      if (b.indexOf('/') !== -1) {
+        const range = ipaddr.parseCIDR(b);
+        return addr.match(range);
+      }
+
+      const bddr = ipaddr.parse(b);
+
+      return addr.toString() === bddr.toString();
+    } catch(error) {
+      return false;
+    }
   },
   NotIpAddress() {
     return !this.conditions.IpAddress.apply(this, arguments);
