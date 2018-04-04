@@ -10,7 +10,7 @@ const {
   isEmpty,
   forEach,
   every,
-} = require('lodash');
+} = require('lodash/fp');
 
 const conditions = {
   NumericEquals(a, b) {
@@ -149,18 +149,19 @@ const conditions = {
   },
 };
 
-forEach(conditions, function (fn, condition) {
+forEach(function (condition) {
+  const fn = conditions[condition];
   conditions[condition + 'IfExists'] = function (a, b) {
     if (isUndefined(a)) return true;
     else return fn.apply(this, arguments);
   };
   conditions['ForAllValues:' + condition] = function (a, b) {
     if (!isArray(a)) a = [a];
-    return every(a, value => {
+    return every(value => {
       return b.find(key => {
         return fn.call(this, value, key);
       });
-    });
+    }, a);
   };
   conditions['ForAnyValue:' + condition] = function (a, b) {
     if (!isArray(a)) a = [a];
@@ -170,7 +171,6 @@ forEach(conditions, function (fn, condition) {
       });
     });
   };
-
-});
+}, Object.keys(conditions));
 
 module.exports = conditions;

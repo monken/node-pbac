@@ -12,9 +12,11 @@ const {
   forEach,
   every,
   get,
-} = require('lodash');
-
-const { flow, map, flatten, find } = require('lodash/fp');
+  flow,
+  map,
+  flatten,
+  find,
+} = require('lodash/fp');
 
 const PBAC = function constructor(policies, options) {
   options = isPlainObject(options) ? options : {};
@@ -38,14 +40,14 @@ Object.assign(PBAC.prototype, {
     this.policies.push.apply(this.policies, policies);
   },
   addConditionsToSchema: function addConditionsToSchema() {
-    const definition = get(this.schema, 'definitions.Condition');
+    const definition = get('definitions.Condition', this.schema);
     if (!definition) return;
     const props = definition.properties = {};
-    forEach(this.conditions, function(condition, name) {
+    forEach(function(name) {
       props[name] = {
         type: 'object'
       };
-    }, this);
+    }, Object.keys(this.conditions));
   },
   _validateSchema() {
     const validator = new ZSchema();
@@ -57,11 +59,11 @@ Object.assign(PBAC.prototype, {
     const validator = new ZSchema({
       noExtraKeywords: true,
     });
-    return every(policies, policy => {
+    return every(policy => {
       const result = validator.validate(policy, this.schema);
       if (!result) this.throw('policy validation failed with ' + validator.getLastError());
       return result;
-    });
+    }, policies);
   },
   evaluate(options) {
     options = Object.assign({
@@ -150,7 +152,7 @@ Object.assign(PBAC.prototype, {
   evaluateCondition(condition, context) {
     if (!isPlainObject(condition)) return true;
     const conditions = this.conditions;
-    return every(Object.keys(condition), key => {
+    return every(key => {
       const expression = condition[key];
       const contextKey = Object.keys(expression)[0];
       let values = expression[contextKey];
@@ -165,7 +167,7 @@ Object.assign(PBAC.prototype, {
       } else {
         return values.find(value => conditions[key].call(this, this.getContextValue(contextKey, context), value));
       }
-    });
+    }, Object.keys(condition));
   },
   throw(name, message) {
     const e = new Error();
