@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>PBAC</title>
+</head>
+<body>
+  <p>Policies:</p>
+  <textarea id="policies" cols="80" rows="20">[
+  {
+    "Version": "2012-10-17",
+    "Statement": [
+      {
+        "Effect": "Allow",
+        "Action": ["iam:CreateUser", "iam:UpdateUser", "iam:DeleteUser"],
+        "Resource": ["arn:aws:iam:::user/${req:UserName}"],
+        "Condition": {
+          "IpAddress": {
+            "req:IpAddress": "10.0.20.0/24"
+          }
+        }
+      }
+    ]
+  }
+]</textarea>
+
+  <p>Action:</p>
+  <input id="action" type="text" size="80" value="iam:CreateUser">
+
+  <p>Resource:</p>
+  <input id="resource" type="text" size="80" value="arn:aws:iam:::user/testuser">
+
+  <p>Context:</p>
+  <textarea id="context" cols="80" rows="10">{
+  "req": {
+    "IpAddress": "10.0.20.51",
+    "UserName": "testuser"
+  }
+}</textarea>
+
+  <p><button type="button" onclick="checkPolicies()">Evaluate</button></p>
+
+  <p>Result: <span id="result">?</span></p>
+
+  <script src="https://cdn.jsdelivr.net/g/lodash@4(lodash.min.js+lodash.fp.min.js)"></script>
+  <script src="https://unpkg.com/ipaddr.js@1.6.0/lib/ipaddr.js"></script>
+  <script src="../dist/pbac.js"></script>
+  <script src="example.js"></script>
+</body>
+</html>
