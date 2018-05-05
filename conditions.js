@@ -10,6 +10,9 @@ const isString = require('lodash/isString'),
   forEach = require('lodash/forEach'),
   every = require('lodash/every');
 
+const isBoolish = function(value) {
+  return isBoolean(value) || value === 'true' || value === 'false';
+}
 
 const conditions = {
   NumericEquals(a, b) {
@@ -131,8 +134,8 @@ const conditions = {
     return !this.conditions.StringLike.apply(this, arguments);
   },
   Bool(a, b) {
-    if (!isBoolean(a) || !isBoolean(b)) return false;
-    return a === b;
+    if (!isBoolish(a) || !isBoolish(b)) return false;
+    return a.toString() === b.toString();
   },
 };
 
