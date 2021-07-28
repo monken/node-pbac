@@ -59,11 +59,11 @@ var conditions = {
   },
   BinaryEquals: function BinaryEquals(a, b) {
     if(!_.isString(b) || !(a instanceof Buffer)) return false;
-    return bufferEquals(a, new Buffer(b, 'base64'));
+    return bufferEquals(a, Buffer.from(b, 'base64'));
   },
   BinaryNotEquals: function BinaryEquals(a, b) {
     if(!_.isString(b) || !(a instanceof Buffer)) return false;
-    return !bufferEquals(a, new Buffer(b, 'base64'));
+    return !bufferEquals(a, Buffer.from(b, 'base64'));
   },
   /*
   ArnEquals

@@ -46,7 +46,7 @@ _.extend(PBAC.prototype, {
     var validator = new ZSchema({
       noExtraKeywords: true,
     });
-    return _.all(policies, function(policy) {
+    return _.every(policies, function(policy) {
       var result = validator.validate(policy, this.schema);
       if (!result)
         this.throw('policy validation failed with', validator.getLastError());
@@ -78,7 +78,7 @@ _.extend(PBAC.prototype, {
 
   },
   filterPoliciesBy: function filterPoliciesBy(options) {
-    return _(this.policies).pluck('Statement').flatten().find(function(statement, idx) {
+    return _(this.policies).map('Statement').flatten().find(function(statement) {
       if (statement.Effect !== options.effect) return false;
       if (statement.Principal && !this.evaluatePrincipal(statement.Principal, options.principal, options.variables))
         return false;

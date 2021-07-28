@@ -87,12 +87,12 @@ var tests = {
     ['2015-07-07T14 :00:00.123Z', '2015-07-07T15:00:00.123Z', false],
   ],
   BinaryEquals: [
-    [new Buffer('SGVsbG8gV29ybGQ=', 'base64'), 'SGVsbG8gV29ybGQ=', true],
+    [Buffer.from('SGVsbG8gV29ybGQ=', 'base64'), 'SGVsbG8gV29ybGQ=', true],
     ['SGVsbG8gV29ybGQ=', 'SGVsbG8gV29ybGQ=', false],
   ],
   BinaryNotEquals: [
-    [new Buffer('SGVsbG8gV29ybGQ=', 'base64'), 'SGVsbG8gV29ybGQ=', false],
-    [new Buffer('SGVsbG8gV29ybGQ=', 'base64'), 'SGVsbG8gV29ybGq=', true],
+    [Buffer.from('SGVsbG8gV29ybGQ=', 'base64'), 'SGVsbG8gV29ybGQ=', false],
+    [Buffer.from('SGVsbG8gV29ybGQ=', 'base64'), 'SGVsbG8gV29ybGq=', true],
     ['SGVsbG8gV29ybGQ=', 'SGVsbG8gV29ybGQ=', false],
   ]
 };
