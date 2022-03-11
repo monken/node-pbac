@@ -6,8 +6,6 @@
 
 Use the power and flexibility of the AWS IAM Policy syntax in your own application to manage access control. For more details on AWS IAM Policies have a look at https://docs.aws.amazon.com/IAM/latest/UserGuide/policies_overview.html.
 
-**Note:** Conditions `ArnEquals`, `ArnNotEquals`, `ArnLike`, `ArnNotLike` are not supported at the moment.
-
 ## Installation
 
 ```
@@ -49,7 +47,7 @@ var pbac = new PBAC(policies);
 pbac.evaluate({
   action: 'iam:CreateUser',
   resource: 'arn:aws:iam:::user/testuser',
-  variables: {
+  context: {
     req: {
       IpAddress: '10.0.20.51',
       UserName: 'testuser',
@@ -94,7 +92,7 @@ If there is no explicit deny the method will look for a matching policy with an 
 pbac.evaluate({
   action: 'iam:CreateUser',
   resource: 'arn:aws:iam:::user/testuser',
-  variables: {
+  context: {
     req: {
       IpAddress: '10.0.20.51',
       UserName: 'testuser',
@@ -108,7 +106,7 @@ pbac.evaluate({
 * **`params`** (Object)
     * `action` (String) - Action to validate
     * `resource` (String) - Resource to validate
-    * `variables` (Object) - Nested object of variables for interpolation of policy variables. See [Variables](#variables).
+    * `context` (Object) - Nested object of context for interpolation of policy context. See [Context](#context).
 
 **Returns**: `boolean`, Returns `true` if `params` passes the policies, `false` otherwise
 
@@ -127,25 +125,25 @@ Will throw an error if validation fails.
 
 ## Reference
 
-### Variables
+### Context
 
-Have a look at https://docs.aws.amazon.com/IAM/latest/UserGuide/PolicyVariables.html to understand what policy variables are, where they can be used and how they are interpreted. The `evaluate` method expects a `variables` parameter which is a nested object that translates to colon-separated variables.
+Have a look at https://docs.aws.amazon.com/IAM/latest/UserGuide/Policycontext.html to understand what policy context are, where they can be used and how they are interpreted. The `evaluate` method expects a `context` parameter which is a nested object that translates to colon-separated context.
 
 **Example:**
 
 ```javascript
-var variables = {
+var context = {
     req: {
       IpAddress: '10.0.20.51',
       UserName: 'testuser',
     },
     session: {
-      LoggedInDate: '20150929T15:12:42Z',
+      LoggedInDate: '2015-09-29T15:12:42Z',
   },
 };
 ```
 
-This would translate to the variables `req:IpAddress`, `req:UserName` and `session:LoggedInDate`.
+This would translate to the context `req:IpAddress`, `req:UserName` and `session:LoggedInDate`.
 
 
 * * *

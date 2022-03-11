@@ -4,6 +4,11 @@ var assert = require('assert'),
 var conditions = require('../conditions');
 
 var tests = {
+  ArnLike: [
+    ['arn:aws:s3:::mybucket','arn:aws:s3:*:*:mybucket*', true],
+    ['arn:aws:s3:123412341234:eu-west-1:mybucket-test','arn:aws:s3:*:*:mybucket*', true],
+    ['arn:aws:s3::::mybucket-test','arn:aws:s3:*:*:mybucket*', false],
+  ],
   StringLike: [
     ['foo', 'foo', true],
     ['fooo', 'foo', false],
@@ -14,6 +19,7 @@ var tests = {
     ['fooxyqkhwebar', 'fo*bar', true],
     ['', '*', true],
     [undefined, '*', true],
+    ['/myapp/users/test', '/myapp/users/*', true],
   ],
   StringLikeIfExists: [
     ['foo', 'foo', true],
@@ -31,10 +37,16 @@ var tests = {
     [false, false, true],
     [false, true, false],
     [false, false, true],
+    ['true', 'false', false],
+    ['false', 'false', true],
+    ['false', 'true', false],
+    ['false', 'false', true],
     [1, true, false],
     [1, false, false],
-    ['true', true, false],
-    ['true', 'true', false],
+    ['1', 'true', false],
+    ['1', 'false', false],
+    ['true', true, true],
+    ['true', 'true', true],
   ],
   IpAddress: [
     ['127.0.0.1', '127.0.0.1', true],

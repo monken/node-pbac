@@ -6,8 +6,6 @@
 
 Use the power and flexibility of the AWS IAM Policy syntax in your own application to manage access control. For more details on AWS IAM Policies have a look at https://docs.aws.amazon.com/IAM/latest/UserGuide/policies_overview.html.
 
-**Note:** The policy elements `Principal`, `NotPrincipal` and  conditions `ArnEquals`, `ArnNotEquals`, `ArnLike`, `ArnNotLike` are not supported at the moment.
-
 ## Installation
 
 ```
@@ -25,7 +23,7 @@ Contents
   - [evaluate(params)](#evaluateparams)
   - [validate(policy)](#validatepolicy)
 - [Reference](#reference)
-  - [Variables](#variables)
+  - [Context](#context)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -61,7 +59,7 @@ var pbac = new PBAC(policies);
 pbac.evaluate({
   action: 'iam:CreateUser',
   resource: 'arn:aws:iam:::user/testuser',
-  variables: {
+  context: {
     req: {
       IpAddress: '10.0.20.51',
       UserName: 'testuser',
@@ -97,16 +95,16 @@ Constructs a policy evaluator.
 
 Tests an object against the policies and determines if the object passes.
 The method will first try to find a policy with an explicit `Deny` for the combination of
-`resource`, `action` and `condition` (matching policy). If such policy exists, `evaulate` returns false.
+`resource`, `action` and `condition` (matching policy). If such policy exists, `evaluate` returns false.
 If there is no explicit deny the method will look for a matching policy with an explicit `Allow`.
-`evaulate` will return `true` if such a policy is found. If no matching can be found at all,
+`evaluate` will return `true` if such a policy is found. If no matching can be found at all,
 `evaluate` will return `false`. Please find a more thorough explanation of this process at https://docs.aws.amazon.com/IAM/latest/UserGuide/AccessPolicyLanguage_EvaluationLogic.html.
 
 ```javascript
 pbac.evaluate({
   action: 'iam:CreateUser',
   resource: 'arn:aws:iam:::user/testuser',
-  variables: {
+  context: {
     req: {
       IpAddress: '10.0.20.51',
       UserName: 'testuser',
@@ -120,7 +118,7 @@ pbac.evaluate({
 * **`params`** (Object)
     * `action` (String) - Action to validate
     * `resource` (String) - Resource to validate
-    * `variables` (Object) - Nested object of variables for interpolation of policy variables. See [Variables](#variables).
+    * `context` (Object) - Nested object of context for interpolation of policy context. See [Context](#context).
 
 **Returns**: `boolean`, Returns `true` if `params` passes the policies, `false` otherwise
 
@@ -139,32 +137,31 @@ Will throw an error if validation fails.
 
 ## Reference
 
-### Variables
+### Context
 
-Have a look at https://docs.aws.amazon.com/IAM/latest/UserGuide/PolicyVariables.html to understand what policy variables are, where they can be used and how they are interpreted. The `evaluate` method expects a `variables` parameter which is a nested object that translates to colon-separated variables.
+Have a look at https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_elements_condition.html to understand what policy context are, where they can be used and how they are interpreted. The `evaluate` method expects a `context` parameter which is a nested object that translates to colon-separated context.
 
 **Example:**
 
 ```javascript
-var variables = {
+var context = {
     req: {
       IpAddress: '10.0.20.51',
       UserName: 'testuser',
     },
     session: {
-      LoggedInDate: '20150929T15:12:42Z',
+      LoggedInDate: '2015-09-29T15:12:42Z',
   },
 };
 ```
 
-This would translate to the variables `req:IpAddress`, `req:UserName` and `session:LoggedInDate`.
+This would translate to the context `req:IpAddress`, `req:UserName` and `session:LoggedInDate`.
 
 
 * * *
-
 The MIT License (MIT)
 
-Copyright (c) 2015 Moritz Onken
+Copyright (c) 2018 Moritz Onken
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
