@@ -4,17 +4,16 @@
   "description": "AWS IAM Policy inspired and (mostly) compatible evaluation engine",
   "dependencies": {
     "ipcheck": "^0.1.0",
-    "lodash": "^4.17.5",
-    "z-schema": "^3.19.1"
+    "lodash": "^4.17.21",
+    "z-schema": "^4.2.4"
   },
   "scripts": {
     "test": "mocha --bail t/",
     "docs": "cat output/intro.md LICENSE > README.md && doctoc --title Contents README.md"
   },
   "devDependencies": {
-    "doctoc": "^1.3.1",
-    "jsdox": "^0.4.9",
-    "mocha": "^2.2.5"
+    "doctoc": "^2.0.1",
+    "mocha": "^9.0.3"
   },
   "repository": {
     "type": "git",

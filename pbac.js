@@ -7,6 +7,7 @@ const util = require('util');
 const isPlainObject = require('lodash/isPlainObject');
 const isBoolean = require('lodash/isBoolean');
 const isArray = require('lodash/isArray');
+const isString = require('lodash/isString');
 const isUndefined = require('lodash/isUndefined');
 const isEmpty = require('lodash/isEmpty');
 const forEach = require('lodash/forEach');
@@ -107,10 +108,11 @@ Object.assign(PBAC.prototype, {
         if (statement.NotAction && this.evaluateAction(statement.NotAction, options.action))
           return false;
         return this.evaluateCondition(statement.Condition, options.context);
-    })
-  )(this.policies);
+      })
+    )(this.policies);
   },
   interpolateValue(value, variables) {
+    if (!isString(value)) return value;
     return value.replace(/\${(.+?)}/g, (match, variable) => {
       return this.getVariableValue(variable, variables);
     });
@@ -119,13 +121,11 @@ Object.assign(PBAC.prototype, {
     var parts = key.split(':');
     if (isPlainObject(context[parts[0]]) && !isUndefined(context[parts[0]][parts[1]]))
       return context[parts[0]][parts[1]];
-    else return key;
   },
   getVariableValue(variable, variables) {
     const parts = variable.split(':');
     if (isPlainObject(variables[parts[0]]) && !isUndefined(variables[parts[0]][parts[1]]))
       return variables[parts[0]][parts[1]];
-    else return variable;
   },
   evaluateNotPrincipal(principals, reference) {
     return Object.keys(reference).find(key => {
@@ -166,7 +166,9 @@ Object.assign(PBAC.prototype, {
       if (prefix === 'ForAnyValue' || prefix === 'ForAllValues') {
         return conditions[key].call(this, this.getContextValue(contextKey, context), values);
       } else {
-        return values.find(value => conditions[key].call(this, this.getContextValue(contextKey, context), value));
+        return !isUndefined(
+          values.find(value => conditions[key].call(this, this.getContextValue(contextKey, context), this.interpolateValue(value, context)))
+        );
       }
     });
   },

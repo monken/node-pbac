@@ -71,11 +71,11 @@ const conditions = {
   },
   BinaryEquals(a, b) {
     if (!isString(b) || !(a instanceof Buffer)) return false;
-    return a.equals(new Buffer(b, 'base64'));
+    return a.equals(Buffer.from(b, 'base64'));
   },
   BinaryNotEquals(a, b) {
     if (!isString(b) || !(a instanceof Buffer)) return false;
-    return !a.equals(new Buffer(b, 'base64'));
+    return !a.equals(Buffer.from(b, 'base64'));
   },
   ArnLike: function ArnLike(a, b) {
     if (!isString(b)) return false;
