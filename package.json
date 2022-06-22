@@ -1,6 +1,6 @@
 {
   "name": "pbac",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "description": "AWS IAM Policy inspired and (mostly) compatible evaluation engine",
   "dependencies": {
     "ipcheck": "^0.1.0",
@@ -22,5 +22,9 @@
   "main": "pbac.js",
   "author": "Moritz Onken <onken@netcubed.de>",
   "license": "MIT",
-  "files": ["pbac.js", "schema.json", "conditions.js"]
+  "files": [
+    "pbac.js",
+    "schema.json",
+    "conditions.js"
+  ]
 }
