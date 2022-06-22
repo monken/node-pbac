@@ -139,7 +139,7 @@ Will throw an error if validation fails.
 
 ### Context
 
-Have a look at https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_elements_condition.html to understand what policy context are, where they can be used and how they are interpreted. The `evaluate` method expects a `context` parameter which is a nested object that translates to colon-separated context.
+Have a look at https://docs.aws.amazon.com/IAM/latest/UserGuide/Policycontext.html to understand what policy context are, where they can be used and how they are interpreted. The `evaluate` method expects a `context` parameter which is a nested object that translates to colon-separated context.
 
 **Example:**
 
